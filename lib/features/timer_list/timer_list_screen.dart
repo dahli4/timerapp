@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import 'package:timerapp/features/timer_run/timer_run_screen.dart';
 import '../../data/study_timer_model.dart';
-import 'dart:math';
 
 class TimerListScreen extends StatefulWidget {
   const TimerListScreen({super.key});
@@ -12,6 +13,29 @@ class TimerListScreen extends StatefulWidget {
 
 class _TimerListScreenState extends State<TimerListScreen> {
   final List<StudyTimerModel> _timers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTimers();
+  }
+
+  Future<void> _loadTimers() async {
+    final prefs = await SharedPreferences.getInstance();
+    final timersJson = prefs.getStringList('timers') ?? [];
+    setState(() {
+      _timers.clear();
+      _timers.addAll(
+        timersJson.map((e) => StudyTimerModel.fromMap(jsonDecode(e))),
+      );
+    });
+  }
+
+  Future<void> _saveTimers() async {
+    final prefs = await SharedPreferences.getInstance();
+    final timersJson = _timers.map((e) => jsonEncode(e.toMap())).toList();
+    await prefs.setStringList('timers', timersJson);
+  }
 
   void _showAddTimerDialog() {
     final titleController = TextEditingController();
@@ -42,7 +66,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                 child: const Text('취소'),
               ),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   final title = titleController.text.trim();
                   final duration = int.tryParse(durationController.text) ?? 0;
                   if (title.isNotEmpty && duration > 0) {
@@ -56,6 +80,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                         ),
                       );
                     });
+                    await _saveTimers();
                     Navigator.pop(context);
                   }
                 },
