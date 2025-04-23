@@ -91,6 +91,61 @@ class _TimerListScreenState extends State<TimerListScreen> {
     );
   }
 
+  void _showEditTimerDialog(int idx, StudyTimerModel timer) {
+    final titleController = TextEditingController(text: timer.title);
+    final durationController = TextEditingController(
+      text: timer.durationMinutes.toString(),
+    );
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('타이머 수정'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(labelText: '제목'),
+                ),
+                TextField(
+                  controller: durationController,
+                  decoration: const InputDecoration(labelText: '시간(분)'),
+                  keyboardType: TextInputType.number,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('취소'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  final title = titleController.text.trim();
+                  final duration = int.tryParse(durationController.text) ?? 0;
+                  if (title.isNotEmpty && duration > 0) {
+                    setState(() {
+                      _timers[idx] = StudyTimerModel(
+                        id: timer.id,
+                        title: title,
+                        durationMinutes: duration,
+                        createdAt: timer.createdAt,
+                        colorHex: timer.colorHex,
+                      );
+                    });
+                    await _saveTimers();
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text('저장'),
+              ),
+            ],
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -106,6 +161,26 @@ class _TimerListScreenState extends State<TimerListScreen> {
                     title: Text(timer.title),
                     subtitle: Text('${timer.durationMinutes}분'),
                     leading: const Icon(Icons.timer),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () {
+                            _showEditTimerDialog(idx, timer);
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () async {
+                            setState(() {
+                              _timers.removeAt(idx);
+                            });
+                            await _saveTimers();
+                          },
+                        ),
+                      ],
+                    ),
                     onTap: () {
                       Navigator.push(
                         context,
