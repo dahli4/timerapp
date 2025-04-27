@@ -20,19 +20,22 @@ class StudyRecordModelAdapter extends TypeAdapter<StudyRecordModel> {
       timerId: fields[0] as String,
       date: fields[1] as DateTime,
       minutes: fields[2] as int,
+      seconds: fields[3] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, StudyRecordModel obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.timerId)
       ..writeByte(1)
       ..write(obj.date)
       ..writeByte(2)
-      ..write(obj.minutes);
+      ..write(obj.minutes)
+      ..writeByte(3)
+      ..write(obj.seconds);
   }
 
   @override
