@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
 import 'app/main_tab_controller.dart'; // 경로 수정
+import 'package:hive_flutter/hive_flutter.dart';
+import 'data/study_timer_model.dart';
+import 'data/study_record_model.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  Hive.registerAdapter(StudyTimerModelAdapter());
+  Hive.registerAdapter(StudyRecordModelAdapter());
+  await Hive.openBox<StudyTimerModel>('timers');
+  await Hive.openBox<StudyRecordModel>('records');
   runApp(const StudyTimerApp());
 }
 
