@@ -1,10 +1,19 @@
-// lib/data/models/study_timer_model.dart
-class StudyTimerModel {
+import 'package:hive/hive.dart';
+
+part 'study_timer_model.g.dart';
+
+@HiveType(typeId: 0)
+class StudyTimerModel extends HiveObject {
+  @HiveField(0)
   final String id;
+  @HiveField(1)
   final String title;
+  @HiveField(2)
   final int durationMinutes;
+  @HiveField(3)
   final DateTime createdAt;
-  final int? colorHex; // optional
+  @HiveField(4)
+  final int? colorHex;
 
   StudyTimerModel({
     required this.id,
@@ -13,24 +22,4 @@ class StudyTimerModel {
     required this.createdAt,
     this.colorHex,
   });
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'title': title,
-      'durationMinutes': durationMinutes,
-      'createdAt': createdAt.toIso8601String(),
-      'colorHex': colorHex,
-    };
-  }
-
-  factory StudyTimerModel.fromMap(Map<String, dynamic> map) {
-    return StudyTimerModel(
-      id: map['id'],
-      title: map['title'],
-      durationMinutes: map['durationMinutes'],
-      createdAt: DateTime.parse(map['createdAt']),
-      colorHex: map['colorHex'],
-    );
-  }
 }

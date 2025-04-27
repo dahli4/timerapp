@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'dart:math';
 import '../../data/study_timer_model.dart';
+import 'timer_circle_painter.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import '../../data/study_record_model.dart';
 
 class TimerRunScreen extends StatefulWidget {
   final StudyTimerModel timer;
@@ -22,6 +25,7 @@ class _TimerRunScreenState extends State<TimerRunScreen>
 
   Ticker? _ticker;
   double _elapsedSeconds = 0;
+  bool _recordSaved = false; // 1분 이상 기록 저장 여부
   bool _isRunning = false;
   DateTime? _startTime;
 
@@ -51,10 +55,22 @@ class _TimerRunScreenState extends State<TimerRunScreen>
       final now = DateTime.now();
       setState(() {
         _elapsedSeconds = now.difference(_startTime!).inMilliseconds / 1000.0;
+
+        // 1분 이상 경과 & 아직 기록 안 했으면 저장
+        if (_elapsedSeconds >= 60 && !_recordSaved) {
+          _saveRecord();
+          _recordSaved = true;
+        }
+
         if (_elapsedSeconds >= _totalSeconds) {
           _elapsedSeconds = _totalSeconds.toDouble();
           _isRunning = false;
           _ticker?.stop();
+          // 종료 시점에도 기록이 없으면 저장
+          if (!_recordSaved) {
+            _saveRecord();
+            _recordSaved = true;
+          }
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text('타이머 종료!')));
@@ -69,6 +85,11 @@ class _TimerRunScreenState extends State<TimerRunScreen>
       _isRunning = false;
     });
     _ticker?.stop();
+    // 1분 이상 경과 & 아직 기록 안 했으면 저장
+    if (_elapsedSeconds >= 60 && !_recordSaved) {
+      _saveRecord();
+      _recordSaved = true;
+    }
   }
 
   void _reset() {
@@ -76,10 +97,23 @@ class _TimerRunScreenState extends State<TimerRunScreen>
       _elapsedSeconds = 0;
       _isRunning = false;
       _startTime = null;
+      _recordSaved = false;
     });
     _ticker?.stop();
     _ticker?.dispose();
     _ticker = null;
+  }
+
+  void _saveRecord() async {
+    final recordBox = Hive.box<StudyRecordModel>('records');
+    await recordBox.add(
+      StudyRecordModel(
+        timerId: widget.timer.id,
+        date: DateTime.now(),
+        minutes: _elapsedSeconds ~/ 60,
+        seconds: (_elapsedSeconds % 60).toInt(),
+      ),
+    );
   }
 
   @override
@@ -129,71 +163,5 @@ class _TimerRunScreenState extends State<TimerRunScreen>
         ),
       ),
     );
-  }
-}
-
-class TimerCirclePainter extends CustomPainter {
-  final double progress; // 0.0 ~ 1.0
-
-  TimerCirclePainter({required this.progress});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 12;
-
-    // 경과 부분 (빨간색, 채우기)
-    final redPaint =
-        Paint()
-          ..color = Colors.red
-          ..style = PaintingStyle.fill;
-
-    final sweepAngle = 2 * pi * progress;
-    if (progress > 0) {
-      Path path = Path();
-      path.moveTo(center.dx, center.dy);
-      path.arcTo(
-        Rect.fromCircle(center: center, radius: radius),
-        -pi / 2,
-        sweepAngle,
-        false,
-      );
-      path.close();
-      canvas.drawPath(path, redPaint);
-    }
-
-    // 테두리(Outline)
-    final outlinePaint =
-        Paint()
-          ..color = Colors.grey.shade400
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 4;
-    canvas.drawCircle(center, radius, outlinePaint);
-
-    // 침(바늘) - 원 밖으로 안 나가게 radius만큼만
-    final needlePaint =
-        Paint()
-          ..color = Colors.red
-          ..strokeWidth = 4;
-
-    final angle = -pi / 2 + sweepAngle;
-    final needleLength = radius; // 바늘 길이 = 반지름
-    final needleEnd = Offset(
-      center.dx + needleLength * cos(angle),
-      center.dy + needleLength * sin(angle),
-    );
-    canvas.drawLine(center, needleEnd, needlePaint);
-
-    // 중심 원 (디자인용)
-    final centerDot =
-        Paint()
-          ..color = Colors.red
-          ..style = PaintingStyle.fill;
-    canvas.drawCircle(center, 6, centerDot);
-  }
-
-  @override
-  bool shouldRepaint(covariant TimerCirclePainter oldDelegate) {
-    return oldDelegate.progress != progress;
   }
 }
