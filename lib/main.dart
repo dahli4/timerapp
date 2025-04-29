@@ -23,9 +23,9 @@ class StudyTimerApp extends StatelessWidget {
       title: '공시생 타이머',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.light(
+        colorScheme: ColorScheme.dark(
           primary: Colors.indigo,
-          surface: Colors.white,
+          surface: Colors.grey[900]!,
         ),
         useMaterial3: true,
       ),
