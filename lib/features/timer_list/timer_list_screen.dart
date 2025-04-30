@@ -119,9 +119,28 @@ class _TimerListScreenState extends State<TimerListScreen> {
                   );
                 },
               ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddTimerDialog,
-        child: const Icon(Icons.add),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            colors: [Colors.indigo, Colors.blueAccent],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.indigo.withOpacity(0.4),
+              blurRadius: 12,
+              offset: Offset(0, 6),
+            ),
+          ],
+        ),
+        child: FloatingActionButton(
+          onPressed: _showAddTimerDialog,
+          backgroundColor: Colors.transparent, // gradient가 보이도록
+          elevation: 0,
+          child: const Icon(Icons.add_rounded, size: 32),
+        ),
       ),
     );
   }
