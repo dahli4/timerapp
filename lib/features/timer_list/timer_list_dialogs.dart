@@ -33,7 +33,9 @@ Future<void> showTimerDialog({
               ),
               TextField(
                 controller: durationController,
-                decoration: const InputDecoration(labelText: '시간(분)'),
+                decoration: const InputDecoration(
+                  labelText: '타이머 시간 (분 단위로 입력)',
+                ),
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 16),

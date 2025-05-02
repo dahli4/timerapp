@@ -105,8 +105,29 @@ class _TimerListScreenState extends State<TimerListScreen> {
                     timer: timer,
                     onEdit: () => _showEditTimerDialog(idx, timer),
                     onDelete: () async {
-                      await _timerBox.deleteAt(idx);
-                      setState(() {});
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder:
+                            (context) => AlertDialog(
+                              title: const Text('삭제 확인'),
+                              content: const Text('정말로 이 타이머를 삭제하시겠습니까?'),
+                              actions: [
+                                TextButton(
+                                  onPressed:
+                                      () => Navigator.pop(context, false),
+                                  child: const Text('취소'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text('삭제'),
+                                ),
+                              ],
+                            ),
+                      );
+                      if (confirm == true) {
+                        await _timerBox.deleteAt(idx);
+                        setState(() {});
+                      }
                     },
                     onTap: () {
                       Navigator.push(
