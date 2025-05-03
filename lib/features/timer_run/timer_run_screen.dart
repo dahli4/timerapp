@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'dart:math';
 import '../../data/study_timer_model.dart';
 import 'timer_circle_painter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -19,8 +18,6 @@ class _TimerRunScreenState extends State<TimerRunScreen>
   late final int _totalSeconds;
   late final String _title;
   late final int _durationMinutes;
-  late final DateTime _createdAt;
-  late final int? _colorHex;
   late final StudyTimerModel _timer;
 
   Ticker? _ticker;
@@ -35,8 +32,6 @@ class _TimerRunScreenState extends State<TimerRunScreen>
     _timer = widget.timer;
     _title = _timer.title;
     _durationMinutes = _timer.durationMinutes;
-    _createdAt = _timer.createdAt;
-    _colorHex = _timer.colorHex;
     _totalSeconds = _durationMinutes * 60;
     _elapsedSeconds = 0;
   }
