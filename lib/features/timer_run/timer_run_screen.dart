@@ -4,6 +4,7 @@ import '../../data/study_timer_model.dart';
 import 'timer_circle_painter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../data/study_record_model.dart';
+import '../../utils/notification_helper.dart';
 
 class TimerRunScreen extends StatefulWidget {
   final StudyTimerModel timer;
@@ -14,7 +15,7 @@ class TimerRunScreen extends StatefulWidget {
 }
 
 class _TimerRunScreenState extends State<TimerRunScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final int _totalSeconds;
   late final String _title;
   late final int _durationMinutes;
@@ -29,6 +30,7 @@ class _TimerRunScreenState extends State<TimerRunScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _timer = widget.timer;
     _title = _timer.title;
     _durationMinutes = _timer.durationMinutes;
@@ -73,6 +75,11 @@ class _TimerRunScreenState extends State<TimerRunScreen>
       });
     });
     _ticker?.start();
+
+    // === 타이머 시작 시 알림 예약 ===
+    final secondsLeft =
+        (_totalSeconds - _elapsedSeconds).clamp(0, _totalSeconds).toInt();
+    scheduleTimerNotification(secondsLeft);
   }
 
   void _pause() {
@@ -80,6 +87,10 @@ class _TimerRunScreenState extends State<TimerRunScreen>
       _isRunning = false;
     });
     _ticker?.stop();
+
+    // === 타이머 일시정지 시 알림 취소 ===
+    cancelTimerNotification();
+
     // 1분 이상 경과 & 아직 기록 안 했으면 저장
     if (_elapsedSeconds >= 60 && !_recordSaved) {
       _saveRecord();
@@ -97,6 +108,9 @@ class _TimerRunScreenState extends State<TimerRunScreen>
     _ticker?.stop();
     _ticker?.dispose();
     _ticker = null;
+
+    // === 타이머 리셋 시 알림 취소 ===
+    cancelTimerNotification();
   }
 
   void _saveRecord() async {
@@ -113,8 +127,21 @@ class _TimerRunScreenState extends State<TimerRunScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _ticker?.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed &&
+        _isRunning &&
+        _startTime != null) {
+      final now = DateTime.now();
+      setState(() {
+        _elapsedSeconds = now.difference(_startTime!).inMilliseconds / 1000.0;
+      });
+    }
   }
 
   @override

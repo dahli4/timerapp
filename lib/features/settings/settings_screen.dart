@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
+import '../../data/study_record_model.dart';
+import '../../main.dart'; // themeNotifier를 import
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -24,10 +28,23 @@ class SettingsScreen extends StatelessWidget {
           ),
     );
     if (confirm == true) {
-      // TODO: 공부 기록 전체 삭제 로직 추가
+      final recordBox = Hive.box<StudyRecordModel>('records');
+      await recordBox.clear();
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('공부 기록이 초기화되었습니다.')));
+    }
+  }
+
+  Future<void> _checkNotificationPermission(BuildContext context) async {
+    final status = await Permission.notification.status;
+    if (!status.isGranted) {
+      final result = await Permission.notification.request();
+      if (!result.isGranted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('알림 권한이 필요합니다.')));
+      }
     }
   }
 
@@ -44,7 +61,8 @@ class SettingsScreen extends StatelessWidget {
                   leading: const Icon(Icons.notifications_active_outlined),
                   title: const Text('알림 설정'),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
+                  onTap: () async {
+                    await _checkNotificationPermission(context);
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -52,6 +70,21 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     );
                   },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.dark_mode),
+                  title: const Text('다크모드'),
+                  trailing: ValueListenableBuilder<ThemeMode>(
+                    valueListenable: themeNotifier,
+                    builder:
+                        (context, mode, _) => Switch(
+                          value: mode == ThemeMode.dark,
+                          onChanged: (val) {
+                            themeNotifier.value =
+                                val ? ThemeMode.dark : ThemeMode.light;
+                          },
+                        ),
+                  ),
                 ),
                 ListTile(
                   leading: const Icon(Icons.delete_outline),
@@ -105,6 +138,11 @@ class _NotificationSettingsScreenState
   }
 
   Future<void> _setAlarm(bool value) async {
+    // 알림 토글 시 권한 확인
+    await (context
+            .findAncestorWidgetOfExactType<SettingsScreen>()
+            ?._checkNotificationPermission(context) ??
+        Future.value());
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('alarm', value);
     setState(() => _alarm = value);
@@ -125,7 +163,9 @@ class _NotificationSettingsScreenState
           SwitchListTile(
             title: const Text('타이머 종료 시 알림'),
             value: _alarm,
-            onChanged: _setAlarm,
+            onChanged: (val) async {
+              await _setAlarm(val);
+            },
           ),
           SwitchListTile(
             title: const Text('타이머 종료 시 진동'),
