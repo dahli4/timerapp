@@ -134,13 +134,13 @@ class _TimerRunScreenState extends State<TimerRunScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed &&
-        _isRunning &&
-        _startTime != null) {
-      final now = DateTime.now();
-      setState(() {
-        _elapsedSeconds = now.difference(_startTime!).inMilliseconds / 1000.0;
-      });
+    if (state == AppLifecycleState.resumed && _isRunning) {
+      if (_startTime != null) {
+        final now = DateTime.now();
+        setState(() {
+          _elapsedSeconds = now.difference(_startTime!).inMilliseconds / 1000.0;
+        });
+      }
     }
   }
 
