@@ -41,9 +41,31 @@ class SettingsScreen extends StatelessWidget {
     if (!status.isGranted) {
       final result = await Permission.notification.request();
       if (!result.isGranted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('알림 권한이 필요합니다.')));
+        // 권한 거부 시 안내 다이얼로그
+        showDialog(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: const Text('알림 권한 필요'),
+                content: const Text(
+                  '타이머 종료 알림을 받으려면 알림 권한이 필요합니다.\n'
+                  '설정에서 권한을 허용해 주세요.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('닫기'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      openAppSettings();
+                      Navigator.pop(context);
+                    },
+                    child: const Text('앱 설정 열기'),
+                  ),
+                ],
+              ),
+        );
       }
     }
   }
