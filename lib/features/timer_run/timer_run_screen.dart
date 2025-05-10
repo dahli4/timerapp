@@ -36,24 +36,13 @@ class _TimerRunScreenState extends State<TimerRunScreen>
     _durationMinutes = _timer.durationMinutes;
     _totalSeconds = _durationMinutes * 60;
     _elapsedSeconds = 0;
-  }
 
-  void _start() {
-    if (_isRunning) return;
-    setState(() {
-      _isRunning = true;
-      _startTime = DateTime.now().subtract(
-        Duration(milliseconds: (_elapsedSeconds * 1000).toInt()),
-      );
-    });
-    _ticker?.dispose();
     _ticker = createTicker((_) {
       if (!_isRunning) return;
       final now = DateTime.now();
       setState(() {
         _elapsedSeconds = now.difference(_startTime!).inMilliseconds / 1000.0;
 
-        // 1분 이상 경과 & 아직 기록 안 했으면 저장
         if (_elapsedSeconds >= 60 && !_recordSaved) {
           _saveRecord();
           _recordSaved = true;
@@ -63,7 +52,6 @@ class _TimerRunScreenState extends State<TimerRunScreen>
           _elapsedSeconds = _totalSeconds.toDouble();
           _isRunning = false;
           _ticker?.stop();
-          // 종료 시점에도 기록이 없으면 저장
           if (!_recordSaved) {
             _saveRecord();
             _recordSaved = true;
@@ -74,9 +62,45 @@ class _TimerRunScreenState extends State<TimerRunScreen>
         }
       });
     });
+  }
+
+  void _start() {
+    if (_isRunning) return;
+    // Dispose of the existing ticker if it exists
+    _ticker?.dispose();
+    _ticker = createTicker((_) {
+      if (!_isRunning) return;
+      final now = DateTime.now();
+      setState(() {
+        _elapsedSeconds = now.difference(_startTime!).inMilliseconds / 1000.0;
+
+        if (_elapsedSeconds >= 60 && !_recordSaved) {
+          _saveRecord();
+          _recordSaved = true;
+        }
+
+        if (_elapsedSeconds >= _totalSeconds) {
+          _elapsedSeconds = _totalSeconds.toDouble();
+          _isRunning = false;
+          _ticker?.stop();
+          if (!_recordSaved) {
+            _saveRecord();
+            _recordSaved = true;
+          }
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('타이머 종료!')));
+        }
+      });
+    });
+    setState(() {
+      _isRunning = true;
+      _startTime = DateTime.now().subtract(
+        Duration(milliseconds: (_elapsedSeconds * 1000).toInt()),
+      );
+    });
     _ticker?.start();
 
-    // === 타이머 시작 시 알림 예약 ===
     final secondsLeft =
         (_totalSeconds - _elapsedSeconds).clamp(0, _totalSeconds).toInt();
     scheduleTimerNotification(secondsLeft);
@@ -87,11 +111,7 @@ class _TimerRunScreenState extends State<TimerRunScreen>
       _isRunning = false;
     });
     _ticker?.stop();
-
-    // === 타이머 일시정지 시 알림 취소 ===
     cancelTimerNotification();
-
-    // 1분 이상 경과 & 아직 기록 안 했으면 저장
     if (_elapsedSeconds >= 60 && !_recordSaved) {
       _saveRecord();
       _recordSaved = true;
@@ -106,10 +126,6 @@ class _TimerRunScreenState extends State<TimerRunScreen>
       _recordSaved = false;
     });
     _ticker?.stop();
-    _ticker?.dispose();
-    _ticker = null;
-
-    // === 타이머 리셋 시 알림 취소 ===
     cancelTimerNotification();
   }
 

@@ -6,12 +6,18 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
 Future<void> initializeNotifications() async {
-  const AndroidInitializationSettings initializationSettingsAndroid =
+  const AndroidInitializationSettings androidSettings =
       AndroidInitializationSettings('@mipmap/ic_launcher');
-  const InitializationSettings initializationSettings = InitializationSettings(
-    android: initializationSettingsAndroid,
+
+  const DarwinInitializationSettings iosSettings =
+      DarwinInitializationSettings();
+
+  const InitializationSettings initSettings = InitializationSettings(
+    android: androidSettings,
+    iOS: iosSettings, // iOS 설정 추가!
   );
-  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+  await flutterLocalNotificationsPlugin.initialize(initSettings);
   tz.initializeTimeZones();
 }
 

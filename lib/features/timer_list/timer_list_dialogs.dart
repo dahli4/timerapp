@@ -31,12 +31,36 @@ Future<void> showTimerDialog({
                 controller: titleController,
                 decoration: const InputDecoration(labelText: '제목'),
               ),
-              TextField(
-                controller: durationController,
-                decoration: const InputDecoration(
-                  labelText: '타이머 시간 (분 단위로 입력)',
+              GestureDetector(
+                onTap: () async {
+                  final picked = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay(
+                      hour:
+                          int.tryParse(durationController.text) != null
+                              ? int.parse(durationController.text) ~/ 60
+                              : 0,
+                      minute:
+                          int.tryParse(durationController.text) != null
+                              ? int.parse(durationController.text) % 60
+                              : 0,
+                    ),
+                  );
+                  if (picked != null) {
+                    final minutes = picked.hour * 60 + picked.minute;
+                    durationController.text = minutes.toString();
+                  }
+                },
+                child: AbsorbPointer(
+                  child: TextField(
+                    controller: durationController,
+                    decoration: const InputDecoration(
+                      labelText: '타이머 시간 (시:분 선택)',
+                      suffixIcon: Icon(Icons.access_time),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
                 ),
-                keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 16),
               // 위 간격 추가
