@@ -66,6 +66,33 @@ class _TimerRunScreenState extends State<TimerRunScreen>
 
   void _start() {
     if (_isRunning) return;
+    // Dispose of the existing ticker if it exists
+    _ticker?.dispose();
+    _ticker = createTicker((_) {
+      if (!_isRunning) return;
+      final now = DateTime.now();
+      setState(() {
+        _elapsedSeconds = now.difference(_startTime!).inMilliseconds / 1000.0;
+
+        if (_elapsedSeconds >= 60 && !_recordSaved) {
+          _saveRecord();
+          _recordSaved = true;
+        }
+
+        if (_elapsedSeconds >= _totalSeconds) {
+          _elapsedSeconds = _totalSeconds.toDouble();
+          _isRunning = false;
+          _ticker?.stop();
+          if (!_recordSaved) {
+            _saveRecord();
+            _recordSaved = true;
+          }
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('타이머 종료!')));
+        }
+      });
+    });
     setState(() {
       _isRunning = true;
       _startTime = DateTime.now().subtract(
