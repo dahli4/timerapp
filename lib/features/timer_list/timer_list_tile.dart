@@ -28,7 +28,15 @@ class TimerListTile extends StatelessWidget {
         ),
       ),
       title: Text(timer.title),
-      subtitle: Text('${timer.durationMinutes}분'),
+      subtitle: Text(
+        timer.durationMinutes >= 60
+            ? (() {
+              final h = timer.durationMinutes ~/ 60;
+              final m = timer.durationMinutes % 60;
+              return m > 0 ? '$h시간 $m분' : '$h시간';
+            })()
+            : '${timer.durationMinutes}분',
+      ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
