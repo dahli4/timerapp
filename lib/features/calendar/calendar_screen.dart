@@ -94,14 +94,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.rectangle,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.indigo, width: 2),
+                    border: Border.all(color: Colors.lightBlue, width: 2),
                     color: isSelected ? Colors.red : null,
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     '${date.day}',
                     style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.indigo,
+                      color: isSelected ? Colors.white : Colors.lightBlue,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

@@ -115,7 +115,7 @@ class StatsScreen extends StatelessWidget {
             // 오늘 공부
             Text(
               '오늘 ${todayMinutes ~/ 60}시간 ${todayMinutes % 60}분 $todaySeconds초',
-              style: const TextStyle(fontSize: 18, color: Colors.indigo),
+              style: const TextStyle(fontSize: 18, color: Colors.lightBlue),
             ),
             const SizedBox(height: 32), // 간격 넓힘
             // 과목별 누적 시간 (Bar)

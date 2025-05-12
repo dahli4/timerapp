@@ -66,33 +66,7 @@ class _TimerRunScreenState extends State<TimerRunScreen>
 
   void _start() {
     if (_isRunning) return;
-    // Dispose of the existing ticker if it exists
-    _ticker?.dispose();
-    _ticker = createTicker((_) {
-      if (!_isRunning) return;
-      final now = DateTime.now();
-      setState(() {
-        _elapsedSeconds = now.difference(_startTime!).inMilliseconds / 1000.0;
 
-        if (_elapsedSeconds >= 60 && !_recordSaved) {
-          _saveRecord();
-          _recordSaved = true;
-        }
-
-        if (_elapsedSeconds >= _totalSeconds) {
-          _elapsedSeconds = _totalSeconds.toDouble();
-          _isRunning = false;
-          _ticker?.stop();
-          if (!_recordSaved) {
-            _saveRecord();
-            _recordSaved = true;
-          }
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('타이머 종료!')));
-        }
-      });
-    });
     setState(() {
       _isRunning = true;
       _startTime = DateTime.now().subtract(
@@ -168,19 +142,38 @@ class _TimerRunScreenState extends State<TimerRunScreen>
     final seconds = (secondsLeft % 60).toString().padLeft(2, '0');
     final progress = (_elapsedSeconds / _totalSeconds).clamp(0.0, 1.0);
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final timerTextColor =
+        isDark ? Colors.white : Colors.black87; // 라이트모드에서 살짝 검은색
+    final timerBgColor = isDark ? Colors.grey.shade700 : Colors.grey.shade300;
+
     return Scaffold(
       appBar: AppBar(title: Text(_title)),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CustomPaint(
-              size: const Size(200, 200),
-              painter: TimerCirclePainter(progress: progress),
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                CustomPaint(
+                  size: const Size(300, 300),
+                  painter: TimerCirclePainter(
+                    progress: progress,
+                    bgColor: timerBgColor, // 배경색 전달
+                  ),
+                ),
+                Text(
+                  '$minutes:$seconds',
+                  style: TextStyle(
+                    fontSize: 48,
+                    color: timerTextColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Text('$minutes:$seconds', style: const TextStyle(fontSize: 48)),
-            const SizedBox(height: 24),
+            const SizedBox(height: 44),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
