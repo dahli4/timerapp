@@ -76,7 +76,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 shape: BoxShape.circle,
               ),
               markerDecoration: BoxDecoration(
-                color: Colors.green, // 마커 색상
+                color: Colors.lightBlue, // 마커 색상
                 shape: BoxShape.circle,
               ),
               markersAlignment: Alignment.bottomCenter, // 마커를 날짜 아래로 내림

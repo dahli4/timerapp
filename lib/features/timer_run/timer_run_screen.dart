@@ -173,6 +173,20 @@ class _TimerRunScreenState extends State<TimerRunScreen>
                 ),
               ],
             ),
+            // 정지한 시간 표시
+            if (!_isRunning && _elapsedSeconds > 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 24.0, bottom: 8.0),
+                child: Text(
+                  '정지한 시각: '
+                  '${(_elapsedSeconds ~/ 60).toString().padLeft(2, '0')}:'
+                  '${(_elapsedSeconds % 60).toInt().toString().padLeft(2, '0')}',
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: isDark ? Colors.white70 : Colors.black54,
+                  ),
+                ),
+              ),
             const SizedBox(height: 44),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
