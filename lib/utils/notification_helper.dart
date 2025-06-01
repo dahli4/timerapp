@@ -4,14 +4,21 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'dart:io';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
 Future<void> initializeNotifications() async {
-  // Android 13+ 알림 권한 요청
-  if (await Permission.notification.isDenied) {
+  // Android 13+ 알림 권한 요청 (Android만)
+  if (Platform.isAndroid && await Permission.notification.isDenied) {
     await Permission.notification.request();
+  }
+
+  // 정확한 알림 권한 요청 (Android 12+만)
+  if (Platform.isAndroid) {
+    await requestExactAlarmPermission();
   }
 
   // 안드로이드 채널 생성
@@ -19,9 +26,10 @@ Future<void> initializeNotifications() async {
     'timer_channel', // id
     '타이머 알림', // name
     description: '타이머 종료 시 알림을 표시합니다.', // description
-    importance: Importance.high,
+    importance: Importance.max, // max로 변경
     enableVibration: true,
     playSound: true,
+    showBadge: true,
   );
 
   // 안드로이드용 채널 생성
@@ -57,9 +65,16 @@ Future<void> initializeNotifications() async {
   tz.initializeTimeZones();
   tz.setLocalLocation(tz.getLocation('Asia/Seoul')); // 한국 시간대로 설정
 
-  // 권한 상태 확인 및 로그
-  final notificationStatus = await Permission.notification.status;
-  debugPrint('알림 권한 상태: $notificationStatus');
+  // 권한 상태 확인 및 로그 (Android만)
+  if (Platform.isAndroid) {
+    final notificationStatus = await Permission.notification.status;
+    debugPrint('알림 권한 상태: $notificationStatus');
+  }
+
+  // 배터리 최적화 확인 (Android만)
+  if (Platform.isAndroid) {
+    await checkBatteryOptimization();
+  }
 }
 
 Future<void> scheduleTimerNotification(int seconds) async {
@@ -85,17 +100,23 @@ Future<void> scheduleTimerNotification(int seconds) async {
         'timer_channel',
         '타이머 알림',
         channelDescription: '타이머 종료 시 알림을 표시합니다.',
-        importance: Importance.high,
-        priority: Priority.high,
+        importance: Importance.max, // max로 변경
+        priority: Priority.max, // max로 변경
         enableVibration: useVibration,
         playSound: true,
         category: AndroidNotificationCategory.alarm,
         fullScreenIntent: true, // 화면이 꺼져 있어도 표시
+        autoCancel: false, // 자동으로 사라지지 않음
+        ongoing: true, // 지속 알림으로 설정
+        visibility: NotificationVisibility.public,
+        showWhen: true,
+        when: scheduledTime.millisecondsSinceEpoch,
       ),
       iOS: const DarwinNotificationDetails(
         presentAlert: true,
         presentBadge: true,
         presentSound: true,
+        interruptionLevel: InterruptionLevel.critical, // iOS에서 중요한 알림으로 설정
       ),
     ),
     // Android 12 이상에서는 정확한 알림을 위해 설정
@@ -117,31 +138,34 @@ Future<bool> hasNotificationPermission() async {
   return status.isGranted;
 }
 
-// 테스트 알림 (디버깅용)
-Future<void> showTestNotification() async {
-  if (!await hasNotificationPermission()) {
-    debugPrint('알림 권한이 없습니다.');
-    return;
-  }
+// 정확한 알람 권한 요청 (Android 12+)
+Future<void> requestExactAlarmPermission() async {
+  if (!Platform.isAndroid) return;
 
-  await flutterLocalNotificationsPlugin.show(
-    999, // 테스트용 ID
-    '테스트 알림',
-    '알림이 정상적으로 작동합니다!',
-    const NotificationDetails(
-      android: AndroidNotificationDetails(
-        'timer_channel',
-        '타이머 알림',
-        channelDescription: '타이머 종료 시 알림을 표시합니다.',
-        importance: Importance.high,
-        priority: Priority.high,
-      ),
-      iOS: DarwinNotificationDetails(
-        presentAlert: true,
-        presentBadge: true,
-        presentSound: true,
-      ),
-    ),
-  );
-  debugPrint('테스트 알림 전송됨');
+  final androidInfo = await DeviceInfoPlugin().androidInfo;
+  if (androidInfo.version.sdkInt >= 31) {
+    // Android 12+
+    final status = await Permission.systemAlertWindow.status;
+    if (!status.isGranted) {
+      await Permission.systemAlertWindow.request();
+    }
+  }
+}
+
+// 배터리 최적화 확인 및 설정 안내
+Future<void> checkBatteryOptimization() async {
+  if (!Platform.isAndroid) return;
+
+  try {
+    final androidInfo = await DeviceInfoPlugin().androidInfo;
+    if (androidInfo.version.sdkInt >= 23) {
+      // Android 6.0+
+      final status = await Permission.ignoreBatteryOptimizations.status;
+      if (!status.isGranted) {
+        debugPrint('배터리 최적화 권한이 필요합니다. 설정에서 확인해주세요.');
+      }
+    }
+  } catch (e) {
+    debugPrint('배터리 최적화 확인 중 오류: $e');
+  }
 }

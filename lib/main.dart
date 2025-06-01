@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:timerapp/utils/notification_helper.dart';
-import 'app/main_tab_controller.dart'; // 경로 수정
+import 'utils/background_notification_helper.dart';
+import 'app/main_tab_controller.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'data/study_timer_model.dart';
 import 'data/study_record_model.dart';
+import 'dart:io';
 
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 
@@ -15,6 +17,12 @@ void main() async {
   await Hive.openBox<StudyTimerModel>('timers');
   await Hive.openBox<StudyRecordModel>('records');
   await initializeNotifications();
+
+  // WorkManager 초기화 (Android만)
+  if (Platform.isAndroid) {
+    await initializeWorkManager();
+  }
+
   runApp(const MyApp());
 }
 
@@ -31,61 +39,105 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: ThemeData.light().copyWith(
             colorScheme: ThemeData.light().colorScheme.copyWith(
-              primary: Colors.blueAccent, // 버튼 등 주요 색상
-              secondary: Colors.amber,
+              primary: Colors.grey.shade700,
+              secondary: Colors.grey.shade600,
               onPrimary: Colors.white,
-              onSurface: Colors.black,
+              onSurface: Colors.black87,
+              surface: Colors.white,
+            ),
+            scaffoldBackgroundColor: Colors.white,
+            appBarTheme: AppBarTheme(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black87,
+              elevation: 0,
+              centerTitle: true,
             ),
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white, // 버튼 텍스트
-                backgroundColor: Colors.blueAccent, // 버튼 배경
-                disabledBackgroundColor: Colors.blueAccent.withOpacity(0.5),
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.grey.shade700,
+                disabledBackgroundColor: Colors.grey.shade400,
                 disabledForegroundColor: Colors.white70,
-                shadowColor: Colors.blueAccent.withOpacity(0.4),
               ),
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                foregroundColor: Colors.blueAccent, // 텍스트버튼 색상
+                foregroundColor: Colors.grey.shade700,
               ),
             ),
-            outlinedButtonTheme: OutlinedButtonThemeData(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.blueAccent,
-                side: const BorderSide(color: Colors.blueAccent),
-              ),
+            dialogTheme: DialogTheme(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.transparent,
             ),
-            dialogTheme: DialogThemeData(backgroundColor: Colors.white),
+            switchTheme: SwitchThemeData(
+              thumbColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return Colors.grey.shade700;
+                }
+                return Colors.grey.shade400;
+              }),
+              trackColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return Colors.grey.shade300;
+                }
+                return Colors.grey.shade200;
+              }),
+            ),
           ),
           darkTheme: ThemeData.dark().copyWith(
             colorScheme: ThemeData.dark().colorScheme.copyWith(
-              primary: Colors.blueAccent, // 버튼 등 주요 색상
-              secondary: Colors.amber, // 필요시 보조색
-              onPrimary: Colors.white, // 버튼 위 텍스트
-              onSurface: Colors.white, // 일반 텍스트
+              primary: Colors.grey.shade300,
+              secondary: Colors.grey.shade400,
+              onPrimary: Colors.black87,
+              onSurface: Colors.white,
+              surface: Colors.grey.shade900,
+            ),
+            scaffoldBackgroundColor: Colors.grey.shade900,
+            appBarTheme: AppBarTheme(
+              backgroundColor: Colors.grey.shade900,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              centerTitle: true,
             ),
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white, // 버튼 텍스트
-                backgroundColor: Colors.blueAccent, // 버튼 배경
+                foregroundColor: Colors.black87,
+                backgroundColor: Colors.grey.shade300,
+                disabledBackgroundColor: Colors.grey.shade600,
+                disabledForegroundColor: Colors.grey.shade400,
               ),
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                foregroundColor: Colors.amber, // 텍스트버튼 색상
+                foregroundColor: Colors.grey.shade300,
               ),
+            ),
+            cardTheme: CardTheme(color: Colors.grey.shade800, elevation: 2),
+            dialogTheme: DialogTheme(
+              backgroundColor: Colors.grey.shade800,
+              surfaceTintColor: Colors.transparent,
             ),
             textTheme: ThemeData.dark().textTheme.apply(
               bodyColor: Colors.white,
               displayColor: Colors.white,
             ),
-            dialogTheme: DialogThemeData(
-              backgroundColor: Colors.grey[900],
-            ), // 다이얼로그 배경
+            switchTheme: SwitchThemeData(
+              thumbColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return Colors.grey.shade300;
+                }
+                return Colors.grey.shade600;
+              }),
+              trackColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return Colors.grey.shade800; // 다크모드에서 더 어둡게
+                }
+                return Colors.grey.shade700;
+              }),
+            ),
           ),
           themeMode: mode,
-          home: MainTabController(),
+          home: const MainTabController(),
         );
       },
     );

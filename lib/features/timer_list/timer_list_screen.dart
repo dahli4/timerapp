@@ -93,75 +93,134 @@ class _TimerListScreenState extends State<TimerListScreen> {
   Widget build(BuildContext context) {
     final timers = _timerBox.values.toList();
     return Scaffold(
-      appBar: AppBar(title: const Text('타이머 리스트')),
+      appBar: AppBar(
+        title: const Text(
+          '학습 타이머',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
       body:
           timers.isEmpty
-              ? const Center(child: Text('등록된 타이머가 없습니다.'))
-              : ListView.builder(
-                itemCount: timers.length,
-                itemBuilder: (context, idx) {
-                  final timer = timers[idx];
-                  return TimerListTile(
-                    timer: timer,
-                    onEdit: () => _showEditTimerDialog(idx, timer),
-                    onDelete: () async {
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder:
-                            (context) => AlertDialog(
-                              title: const Text('삭제 확인'),
-                              content: const Text('정말로 이 타이머를 삭제하시겠습니까?'),
-                              actions: [
-                                TextButton(
-                                  onPressed:
-                                      () => Navigator.pop(context, false),
-                                  child: const Text('취소'),
+              ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.timer_outlined,
+                        size: 64,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.4),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      '등록된 타이머가 없습니다',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.7),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '+ 버튼을 눌러 새 타이머를 추가해보세요',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.5),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+              : Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: ListView.builder(
+                  itemCount: timers.length,
+                  itemBuilder: (context, idx) {
+                    final timer = timers[idx];
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: TimerListTile(
+                        timer: timer,
+                        onEdit: () => _showEditTimerDialog(idx, timer),
+                        onDelete: () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder:
+                                (context) => AlertDialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  title: const Text(
+                                    '타이머 삭제',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  content: Text(
+                                    '정말로 "${timer.title}" 타이머를 삭제하시겠습니까?',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed:
+                                          () => Navigator.pop(context, false),
+                                      child: const Text('취소'),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed:
+                                          () => Navigator.pop(context, true),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.red,
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                      ),
+                                      child: const Text('삭제'),
+                                    ),
+                                  ],
                                 ),
-                                ElevatedButton(
-                                  onPressed: () => Navigator.pop(context, true),
-                                  child: const Text('삭제'),
-                                ),
-                              ],
+                          );
+                          if (confirm == true) {
+                            await _timerBox.deleteAt(idx);
+                            setState(() {});
+                          }
+                        },
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => TimerRunScreen(timer: timer),
                             ),
-                      );
-                      if (confirm == true) {
-                        await _timerBox.deleteAt(idx);
-                        setState(() {});
-                      }
-                    },
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => TimerRunScreen(timer: timer),
-                        ),
-                      );
-                    },
-                  );
-                },
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
               ),
-      floatingActionButton: Container(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(
-            colors: [Colors.indigo, Colors.blueAccent],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.indigo.withOpacity(0.4),
-              blurRadius: 12,
-              offset: Offset(0, 6),
-            ),
-          ],
-        ),
-        child: FloatingActionButton(
-          onPressed: _showAddTimerDialog,
-          backgroundColor: Colors.transparent, // gradient가 보이도록
-          elevation: 0,
-          child: const Icon(Icons.add_rounded, size: 32),
-        ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddTimerDialog,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        elevation: 4,
+        child: const Icon(Icons.add_rounded, size: 32),
       ),
     );
   }
