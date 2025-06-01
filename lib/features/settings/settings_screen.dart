@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../data/study_record_model.dart';
 import '../../main.dart'; // themeNotifier를 import
+import '../../utils/notification_helper.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -91,6 +92,23 @@ class SettingsScreen extends StatelessWidget {
                         builder: (_) => const NotificationSettingsScreen(),
                       ),
                     );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.notifications_outlined),
+                  title: const Text('알림 테스트'),
+                  subtitle: const Text('알림이 정상적으로 작동하는지 확인'),
+                  onTap: () async {
+                    try {
+                      await showTestNotification();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('테스트 알림을 전송했습니다!')),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text('알림 전송 실패: $e')));
+                    }
                   },
                 ),
                 ListTile(

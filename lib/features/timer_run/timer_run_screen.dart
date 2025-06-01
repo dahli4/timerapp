@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
+import 'package:flutter/scheduler.dart' hide Priority;
 import '../../data/study_timer_model.dart';
 import 'timer_circle_painter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../data/study_record_model.dart';
 import '../../utils/notification_helper.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TimerRunScreen extends StatefulWidget {
   final StudyTimerModel timer;
@@ -56,6 +58,8 @@ class _TimerRunScreenState extends State<TimerRunScreen>
             _saveRecord();
             _recordSaved = true;
           }
+          // 예약된 알림 외에도 직접 알림 표시 (백그라운드에서도 작동하도록)
+          _showCompletionNotification();
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text('타이머 종료!')));
@@ -111,6 +115,39 @@ class _TimerRunScreenState extends State<TimerRunScreen>
         date: DateTime.now(),
         minutes: _elapsedSeconds ~/ 60,
         seconds: (_elapsedSeconds % 60).toInt(),
+      ),
+    );
+  }
+
+  // 타이머 완료 시 알림 즉시 표시 (백그라운드에서도 작동하도록)
+  Future<void> _showCompletionNotification() async {
+    final prefs = await SharedPreferences.getInstance();
+    final useAlarm = prefs.getBool('alarm') ?? true;
+    final useVibration = prefs.getBool('vibration') ?? false;
+
+    if (!useAlarm) return;
+
+    // 알림 즉시 표시
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      '$_title 타이머 종료',
+      '설정한 시간이 모두 지났어요!',
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          'timer_channel',
+          '타이머 알림',
+          channelDescription: '타이머 종료 시 알림을 표시합니다.',
+          importance: Importance.high,
+          priority: Priority.high,
+          enableVibration: useVibration,
+          playSound: true,
+          category: AndroidNotificationCategory.alarm,
+        ),
+        iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
       ),
     );
   }
