@@ -93,12 +93,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
   Widget build(BuildContext context) {
     final timers = _timerBox.values.toList();
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          '학습 타이머',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
+      appBar: AppBar(title: const Text('학습 타이머')),
       body:
           timers.isEmpty
               ? Center(
