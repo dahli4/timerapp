@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:permission_handler/permission_handler.dart';
 import '../../data/study_record_model.dart';
 import '../../main.dart'; // themeNotifier를 import
+import '../../utils/sound_helper.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
   void _showResetDialog(BuildContext context) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -36,40 +41,6 @@ class SettingsScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _checkNotificationPermission(BuildContext context) async {
-    final status = await Permission.notification.status;
-    if (!status.isGranted) {
-      final result = await Permission.notification.request();
-      if (!result.isGranted) {
-        // 권한 거부 시 안내 다이얼로그
-        showDialog(
-          context: context,
-          builder:
-              (context) => AlertDialog(
-                title: const Text('알림 권한 필요'),
-                content: const Text(
-                  '타이머 종료 알림을 받으려면 알림 권한이 필요합니다.\n'
-                  '설정에서 권한을 허용해 주세요.',
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('닫기'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      openAppSettings();
-                      Navigator.pop(context);
-                    },
-                    child: const Text('앱 설정 열기'),
-                  ),
-                ],
-              ),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -80,15 +51,37 @@ class SettingsScreen extends StatelessWidget {
             child: ListView(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.notifications_active_outlined),
+                  leading: const Icon(Icons.notifications),
                   title: const Text('알림 설정'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () async {
-                    await _checkNotificationPermission(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const NotificationSettingsScreen(),
+                  onTap:
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => const NotificationSettingsScreen(),
+                        ),
+                      ),
+                ),
+
+                // 사운드 설정 추가
+                FutureBuilder<bool>(
+                  future: SoundHelper.isSoundEnabled(),
+                  builder: (context, snapshot) {
+                    return ListTile(
+                      leading: const Icon(Icons.volume_up),
+                      title: const Text('사운드 효과'),
+                      subtitle: const Text('타이머 시작/일시정지/완료 시 소리'),
+                      trailing: Switch(
+                        value: snapshot.data ?? true,
+                        onChanged: (val) async {
+                          await SoundHelper.setSoundEnabled(val);
+                          if (val) {
+                            // 사운드 활성화 시 테스트 사운드 재생
+                            SoundHelper.playClickSound();
+                          }
+                          // UI 새로고침을 위해 setState 호출
+                          setState(() {});
+                        },
                       ),
                     );
                   },
@@ -160,11 +153,6 @@ class _NotificationSettingsScreenState
   }
 
   Future<void> _setAlarm(bool value) async {
-    // 알림 토글 시 권한 확인
-    await (context
-            .findAncestorWidgetOfExactType<SettingsScreen>()
-            ?._checkNotificationPermission(context) ??
-        Future.value());
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('alarm', value);
     setState(() => _alarm = value);

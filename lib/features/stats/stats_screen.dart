@@ -3,9 +3,14 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../../data/study_record_model.dart';
 import '../../data/study_timer_model.dart';
 
-class StatsScreen extends StatelessWidget {
+class StatsScreen extends StatefulWidget {
   const StatsScreen({super.key});
 
+  @override
+  State<StatsScreen> createState() => _StatsScreenState();
+}
+
+class _StatsScreenState extends State<StatsScreen> {
   @override
   Widget build(BuildContext context) {
     final recordBox = Hive.box<StudyRecordModel>('records');
@@ -100,90 +105,500 @@ class StatsScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('통계')),
+      appBar: AppBar(title: const Text('학습 통계')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 누적 시간
-            Text(
-              '총 공부 ${totalMinutes ~/ 60}시간 ${totalMinutes % 60}분 $totalSeconds초',
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            // 총 공부 시간 카드
+            _buildStatCard(
+              icon: Icons.timer_outlined,
+              title: '총 공부 시간',
+              value: '${totalMinutes ~/ 60}시간 ${totalMinutes % 60}분',
+              subtitle: '$totalSeconds초',
+              color: Colors.blue.shade600,
             ),
-            const SizedBox(height: 28), // 간격 넓힘
-            // 오늘 공부
-            Text(
-              '오늘 ${todayMinutes ~/ 60}시간 ${todayMinutes % 60}분 $todaySeconds초',
-              style: const TextStyle(fontSize: 18, color: Colors.lightBlue),
+            const SizedBox(height: 16),
+
+            // 오늘 공부 시간 카드
+            _buildStatCard(
+              icon: Icons.today_outlined,
+              title: '오늘 공부',
+              value: '${todayMinutes ~/ 60}시간 ${todayMinutes % 60}분',
+              subtitle: '$todaySeconds초',
+              color: Colors.green.shade600,
             ),
-            const SizedBox(height: 32), // 간격 넓힘
-            // 과목별 누적 시간 (Bar)
-            const Text(
-              '과목별 누적 시간',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            const SizedBox(height: 20),
+
+            // 과목별 통계 카드
+            _buildSubjectStatsCard(subjectMinutes, subjectSeconds, getSubject),
+            const SizedBox(height: 20),
+
+            // 최근 7일 차트 카드
+            _buildWeeklyChartCard(last7Days, last7Minutes),
+            const SizedBox(height: 20),
+
+            // 최고 기록 카드
+            _buildBestDayCard(bestDay, bestMinutes, bestSeconds),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatCard({
+    required IconData icon,
+    required String title,
+    required String value,
+    required String subtitle,
+    required Color color,
+  }) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color:
+          Theme.of(context).brightness == Brightness.light
+              ? Colors.white
+              : null,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [color.withOpacity(0.03), color.withOpacity(0.08)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 28),
             ),
-            const SizedBox(height: 12),
-            ...subjectMinutes.entries.map(
-              (e) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        getSubject(e.key),
-                        style: TextStyle(fontSize: 24),
-                      ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.7),
+                      fontWeight: FontWeight.w500,
                     ),
-                    Text(
-                      '${e.value ~/ 60}시간 ${e.value % 60}분 ${subjectSeconds[e.key]}초',
-                      style: TextStyle(fontSize: 18),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
-                  ],
-                ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: color,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 36), // 간격 넓힘
-            // 최근 7일 공부량 (Bar)
-            const Text(
-              '최근 7일 공부량',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSubjectStatsCard(
+    Map<String, int> subjectMinutes,
+    Map<String, int> subjectSeconds,
+    String Function(String) getSubject,
+  ) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color:
+          Theme.of(context).brightness == Brightness.light
+              ? Colors.white
+              : null,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).colorScheme.primary.withOpacity(0.03),
+              Theme.of(context).colorScheme.primary.withOpacity(0.08),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.subject_outlined,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  '과목별 누적 시간',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
+            if (subjectMinutes.isEmpty)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.school_outlined,
+                        size: 48,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.3),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        '아직 공부 기록이 없습니다.',
+                        style: TextStyle(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.5),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              ...subjectMinutes.entries.map((e) {
+                final minutes = e.value;
+                final seconds = subjectSeconds[e.key] ?? 0;
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color:
+                        Theme.of(context).brightness == Brightness.light
+                            ? Colors.white
+                            : Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.08),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                    border: Border.all(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.08),
+                      width: 1,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        // 색상 인디케이터 추가
+                        Container(
+                          width: 5,
+                          height: 45,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Theme.of(context).colorScheme.primary,
+                                Theme.of(
+                                  context,
+                                ).colorScheme.primary.withOpacity(0.7),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            getSubject(e.key),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            '${minutes ~/ 60}시간 ${minutes % 60}분 ${seconds % 60}초',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWeeklyChartCard(
+    List<DateTime> last7Days,
+    List<int> last7Minutes,
+  ) {
+    final maxMinutes =
+        last7Minutes.isEmpty
+            ? 60
+            : last7Minutes.reduce((a, b) => a > b ? a : b);
+    final chartHeight = maxMinutes > 0 ? maxMinutes.toDouble() : 60.0;
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color:
+          Theme.of(context).brightness == Brightness.light
+              ? Colors.white
+              : null,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [
+              Colors.teal.withOpacity(0.03),
+              Colors.teal.withOpacity(0.08),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.teal.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.bar_chart_outlined,
+                    color: Colors.teal.shade600,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  '최근 7일 공부량',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
             SizedBox(
-              height: 120,
+              height: 170, // 높이를 늘려서 overflow 방지
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: List.generate(7, (i) {
-                  final min = last7Minutes[i];
+                  final minutes = last7Minutes[i];
+                  final height =
+                      chartHeight > 0 ? (minutes / chartHeight) * 120 : 0.0;
+
                   return Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Container(
-                          height: min.toDouble() * 2, // 1분=2px
-                          width: 18,
-                          color: Colors.indigo,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${last7Days[i].month}/${last7Days[i].day}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        Text('$min분', style: const TextStyle(fontSize: 15)),
-                      ],
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 6),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Container(
+                            height: height.clamp(4.0, 120.0),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                              gradient: LinearGradient(
+                                colors:
+                                    minutes > 0
+                                        ? [
+                                          Colors.teal.shade400,
+                                          Colors.teal.shade600,
+                                        ]
+                                        : [
+                                          Colors.grey.shade300,
+                                          Colors.grey.shade400,
+                                        ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${last7Days[i].month}/${last7Days[i].day}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withOpacity(0.7),
+                            ),
+                          ),
+                          Text(
+                            '$minutes분',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color:
+                                  minutes > 0
+                                      ? Colors.teal.shade600
+                                      : Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface.withOpacity(0.5),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 }),
               ),
             ),
-            const SizedBox(height: 36), // 간격 넓힘
-            // 최고 공부일
-            Text(
-              bestDay.isNotEmpty
-                  ? '가장 오래 공부한 날: $bestDay (${bestMinutes ~/ 60}시간 ${bestMinutes % 60}분 $bestSeconds초)'
-                  : '아직 기록 없음',
-              style: const TextStyle(fontSize: 16, color: Colors.deepOrange),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBestDayCard(String bestDay, int bestMinutes, int bestSeconds) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color:
+          Theme.of(context).brightness == Brightness.light
+              ? Colors.white
+              : null,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [
+              Colors.amber.withOpacity(0.03),
+              Colors.amber.withOpacity(0.08),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.amber.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.star_outlined,
+                color: Colors.amber.shade700,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '최고 기록',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.7),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    bestDay.isNotEmpty ? bestDay : '아직 기록 없음',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  if (bestDay.isNotEmpty)
+                    Text(
+                      '${bestMinutes ~/ 60}시간 ${bestMinutes % 60}분',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.amber.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                ],
+              ),
             ),
           ],
         ),

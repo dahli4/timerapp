@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
+import 'package:flutter/scheduler.dart' hide Priority;
 import '../../data/study_timer_model.dart';
 import 'timer_circle_painter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../data/study_record_model.dart';
 import '../../utils/notification_helper.dart';
+import '../../utils/background_notification_helper.dart';
+import '../../utils/sound_helper.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TimerRunScreen extends StatefulWidget {
   final StudyTimerModel timer;
@@ -56,6 +60,10 @@ class _TimerRunScreenState extends State<TimerRunScreen>
             _saveRecord();
             _recordSaved = true;
           }
+          // 타이머 완료 사운드 재생
+          SoundHelper.playCompleteSound();
+          // 예약된 알림 외에도 직접 알림 표시 (백그라운드에서도 작동하도록)
+          _showCompletionNotification();
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text('타이머 종료!')));
@@ -67,6 +75,9 @@ class _TimerRunScreenState extends State<TimerRunScreen>
   void _start() {
     if (_isRunning) return;
 
+    // 타이머 시작 사운드 재생
+    SoundHelper.playStartSound();
+
     setState(() {
       _isRunning = true;
       _startTime = DateTime.now().subtract(
@@ -77,15 +88,24 @@ class _TimerRunScreenState extends State<TimerRunScreen>
 
     final secondsLeft =
         (_totalSeconds - _elapsedSeconds).clamp(0, _totalSeconds).toInt();
+
+    // 기존 알림 예약
     scheduleTimerNotification(secondsLeft);
+
+    // 백그라운드 알림도 함께 예약 (추가 보장)
+    scheduleBackgroundTimerNotification(_title, secondsLeft);
   }
 
   void _pause() {
+    // 일시정지 사운드 재생
+    SoundHelper.playPauseSound();
+
     setState(() {
       _isRunning = false;
     });
     _ticker?.stop();
     cancelTimerNotification();
+    cancelBackgroundTimerNotification(); // 백그라운드 알림도 취소
     if (_elapsedSeconds >= 60 && !_recordSaved) {
       _saveRecord();
       _recordSaved = true;
@@ -101,6 +121,7 @@ class _TimerRunScreenState extends State<TimerRunScreen>
     });
     _ticker?.stop();
     cancelTimerNotification();
+    cancelBackgroundTimerNotification(); // 백그라운드 알림도 취소
   }
 
   void _saveRecord() async {
@@ -111,6 +132,47 @@ class _TimerRunScreenState extends State<TimerRunScreen>
         date: DateTime.now(),
         minutes: _elapsedSeconds ~/ 60,
         seconds: (_elapsedSeconds % 60).toInt(),
+      ),
+    );
+  }
+
+  // 타이머 완료 시 알림 즉시 표시 (백그라운드에서도 작동하도록)
+  Future<void> _showCompletionNotification() async {
+    final prefs = await SharedPreferences.getInstance();
+    final useAlarm = prefs.getBool('alarm') ?? true;
+    final useVibration = prefs.getBool('vibration') ?? false;
+
+    if (!useAlarm) return;
+
+    // 알림 즉시 표시 - 더 강화된 설정으로
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      '$_title 타이머 종료',
+      '설정한 시간이 모두 지났어요!',
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          'timer_channel',
+          '타이머 알림',
+          channelDescription: '타이머 종료 시 알림을 표시합니다.',
+          importance: Importance.max, // max로 변경
+          priority: Priority.max, // max로 변경
+          enableVibration: useVibration,
+          playSound: true,
+          category: AndroidNotificationCategory.alarm,
+          fullScreenIntent: true, // 화면이 꺼져 있어도 표시
+          autoCancel: false, // 자동으로 사라지지 않음
+          ongoing: false, // 완료 알림은 ongoing하지 않음
+          visibility: NotificationVisibility.public,
+          showWhen: true,
+          when: DateTime.now().millisecondsSinceEpoch,
+          ticker: '$_title 타이머가 종료되었습니다!',
+        ),
+        iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+          interruptionLevel: InterruptionLevel.critical, // iOS에서 중요한 알림으로 설정
+        ),
       ),
     );
   }
@@ -134,6 +196,78 @@ class _TimerRunScreenState extends State<TimerRunScreen>
     }
   }
 
+  // 동기부여 메시지 생성
+  Widget _buildMotivationalMessage(
+    double progress,
+    double elapsedSeconds,
+    bool isDark,
+  ) {
+    String message = '';
+    IconData icon = Icons.emoji_events;
+    Color color = Colors.blue;
+
+    if (progress == 0) {
+      message = '집중할 시간입니다! 💪';
+      icon = Icons.play_circle_outline;
+      color = Colors.green;
+    } else if (progress < 0.25) {
+      message = '좋은 시작이에요! 🌟';
+      icon = Icons.trending_up;
+      color = Colors.blue;
+    } else if (progress < 0.5) {
+      message = '절반까지 왔어요! 🎯';
+      icon = Icons.timeline;
+      color = Colors.orange;
+    } else if (progress < 0.75) {
+      message = '거의 다 왔어요! 🚀';
+      icon = Icons.rocket_launch;
+      color = Colors.purple;
+    } else if (progress < 1.0) {
+      message = '마지막 스퍼트! 🔥';
+      icon = Icons.local_fire_department;
+      color = Colors.red;
+    } else {
+      message = '완주하셨습니다! 🏆';
+      icon = Icons.emoji_events;
+      color = Colors.amber;
+    }
+
+    // 경과 시간에 따른 추가 격려
+    final minutes = elapsedSeconds ~/ 60;
+    if (minutes >= 25) {
+      message += '\n포모도로 달성!';
+    } else if (minutes >= 60) {
+      message += '\n1시간 돌파!';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(
+              message,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final secondsLeft =
@@ -148,7 +282,7 @@ class _TimerRunScreenState extends State<TimerRunScreen>
     final timerBgColor = isDark ? Colors.grey.shade700 : Colors.grey.shade300;
 
     return Scaffold(
-      appBar: AppBar(title: Text(_title)),
+      appBar: AppBar(title: Text(_title), elevation: 0, centerTitle: true),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -188,6 +322,9 @@ class _TimerRunScreenState extends State<TimerRunScreen>
                 ),
               ),
             const SizedBox(height: 44),
+            // 동기부여 메시지 추가
+            _buildMotivationalMessage(progress, _elapsedSeconds, isDark),
+            const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
