@@ -297,9 +297,7 @@ class SubjectDetailScreen extends StatelessWidget {
                     );
                     final height =
                         maxMinutes > 0 ? (entry.value / maxMinutes) * 80 : 0.0;
-                    final dayName =
-                        ['월', '화', '수', '목', '금', '토', '일'][entry.key.weekday -
-                            1];
+                    final dateStr = '${entry.key.month}/${entry.key.day}';
 
                     return Expanded(
                       child: Padding(
@@ -334,7 +332,7 @@ class SubjectDetailScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              dayName,
+                              dateStr,
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
@@ -395,10 +393,14 @@ class SubjectDetailScreen extends StatelessWidget {
             final minutes = record.minutes + (record.seconds ~/ 60);
             final seconds = record.seconds % 60;
             final dateStr = '${record.date.month}/${record.date.day}';
+            final dayName =
+                ['월', '화', '수', '목', '금', '토', '일'][record.date.weekday - 1];
+            final timeStr =
+                '${record.date.hour.toString().padLeft(2, '0')}:${record.date.minute.toString().padLeft(2, '0')}';
 
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: subjectColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
@@ -419,21 +421,69 @@ class SubjectDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
-                      dateStr,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              dateStr,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: subjectColor.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                dayName,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: subjectColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          timeStr,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.6),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  Text(
-                    minutes > 0 ? '$minutes분 $seconds초' : '$seconds초',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: subjectColor,
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: subjectColor.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(
+                      minutes > 0 ? '$minutes분 $seconds초' : '$seconds초',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: subjectColor,
+                      ),
                     ),
                   ),
                 ],
