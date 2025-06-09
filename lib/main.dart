@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:timerapp/utils/notification_helper.dart';
 import 'utils/background_notification_helper.dart';
 import 'app/main_tab_controller.dart';
@@ -37,6 +38,16 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           title: 'Timer App',
           debugShowCheckedModeBanner: false,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('ko', 'KR'), // 한국어
+            Locale('en', 'US'), // 영어
+          ],
+          locale: const Locale('ko', 'KR'), // 기본 로케일을 한국어로 설정
           theme: ThemeData.light().copyWith(
             colorScheme: ThemeData.light().colorScheme.copyWith(
               primary: Colors.grey.shade700,

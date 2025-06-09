@@ -60,8 +60,8 @@ class _TimerRunScreenState extends State<TimerRunScreen>
             _saveRecord();
             _recordSaved = true;
           }
-          // 타이머 완료 사운드 재생
-          SoundHelper.playCompleteSound();
+          // 타이머 완료 햅틱 피드백
+          SoundHelper.playCompleteFeedback();
           // 예약된 알림 외에도 직접 알림 표시 (백그라운드에서도 작동하도록)
           _showCompletionNotification();
           ScaffoldMessenger.of(
@@ -75,8 +75,8 @@ class _TimerRunScreenState extends State<TimerRunScreen>
   void _start() {
     if (_isRunning) return;
 
-    // 타이머 시작 사운드 재생
-    SoundHelper.playStartSound();
+    // 타이머 시작 햅틱 피드백
+    SoundHelper.playStartFeedback();
 
     setState(() {
       _isRunning = true;
@@ -97,8 +97,8 @@ class _TimerRunScreenState extends State<TimerRunScreen>
   }
 
   void _pause() {
-    // 일시정지 사운드 재생
-    SoundHelper.playPauseSound();
+    // 일시정지 햅틱 피드백
+    SoundHelper.playPauseFeedback();
 
     setState(() {
       _isRunning = false;
@@ -215,10 +215,14 @@ class _TimerRunScreenState extends State<TimerRunScreen>
       icon = Icons.trending_up;
       color = Colors.blue;
     } else if (progress < 0.5) {
-      message = '절반까지 왔어요! 🎯';
+      message = '순조롭게 진행 중이에요! 📈';
+      icon = Icons.show_chart;
+      color = Colors.teal;
+    } else if (progress < 0.75) {
+      message = '절반을 넘었어요! 🎯';
       icon = Icons.timeline;
       color = Colors.orange;
-    } else if (progress < 0.75) {
+    } else if (progress < 0.9) {
       message = '거의 다 왔어요! 🚀';
       icon = Icons.rocket_launch;
       color = Colors.purple;

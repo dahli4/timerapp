@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../data/study_record_model.dart';
 import '../../data/study_timer_model.dart';
+import 'subject_detail_screen.dart';
 
 class StatsScreen extends StatefulWidget {
   const StatsScreen({super.key});
@@ -133,7 +134,12 @@ class _StatsScreenState extends State<StatsScreen> {
             const SizedBox(height: 20),
 
             // 과목별 통계 카드
-            _buildSubjectStatsCard(subjectMinutes, subjectSeconds, getSubject),
+            _buildSubjectStatsCard(
+              subjectMinutes,
+              subjectSeconds,
+              getSubject,
+              timerBox,
+            ),
             const SizedBox(height: 20),
 
             // 최근 7일 차트 카드
@@ -227,6 +233,7 @@ class _StatsScreenState extends State<StatsScreen> {
     Map<String, int> subjectMinutes,
     Map<String, int> subjectSeconds,
     String Function(String) getSubject,
+    Box<StudyTimerModel> timerBox,
   ) {
     return Card(
       elevation: 2,
@@ -311,84 +318,122 @@ class _StatsScreenState extends State<StatsScreen> {
               ...subjectMinutes.entries.map((e) {
                 final minutes = e.value;
                 final seconds = subjectSeconds[e.key] ?? 0;
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color:
-                        Theme.of(context).brightness == Brightness.light
-                            ? Colors.white
-                            : Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
+
+                // 타이머 정보와 색상 가져오기
+                final timer = timerBox.values.firstWhere(
+                  (t) => t.id == e.key,
+                  orElse:
+                      () => StudyTimerModel(
+                        id: '',
+                        title: '알 수 없음',
+                        durationMinutes: 0,
+                        createdAt: DateTime.now(),
+                      ),
+                );
+                final subjectColor =
+                    timer.colorHex != null
+                        ? Color(timer.colorHex!)
+                        : Colors.blue.shade600;
+
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => SubjectDetailScreen(
+                              timerId: e.key,
+                              subjectName: getSubject(e.key),
+                              subjectColor: subjectColor,
+                            ),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color:
+                          Theme.of(context).brightness == Brightness.light
+                              ? Colors.white
+                              : Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.08),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                      border: Border.all(
                         color: Theme.of(
                           context,
                         ).colorScheme.onSurface.withOpacity(0.08),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                        width: 1,
                       ),
-                    ],
-                    border: Border.all(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withOpacity(0.08),
-                      width: 1,
                     ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        // 색상 인디케이터 추가
-                        Container(
-                          width: 5,
-                          height: 45,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Theme.of(context).colorScheme.primary,
-                                Theme.of(
-                                  context,
-                                ).colorScheme.primary.withOpacity(0.7),
-                              ],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                            ),
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Text(
-                            getSubject(e.key),
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).colorScheme.onSurface,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          // 색상 인디케이터 추가
+                          Container(
+                            width: 5,
+                            height: 45,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  subjectColor,
+                                  subjectColor.withOpacity(0.7),
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
+                              borderRadius: BorderRadius.circular(3),
                             ),
                           ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text(
+                              getSubject(e.key),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
                           ),
-                          decoration: BoxDecoration(
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              '${minutes ~/ 60}시간 ${minutes % 60}분 ${seconds % 60}초',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.arrow_forward_ios,
+                            size: 16,
                             color: Theme.of(
                               context,
-                            ).colorScheme.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
+                            ).colorScheme.onSurface.withOpacity(0.4),
                           ),
-                          child: Text(
-                            '${minutes ~/ 60}시간 ${minutes % 60}분 ${seconds % 60}초',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 );
