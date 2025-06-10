@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../data/study_record_model.dart';
 import '../../main.dart'; // themeNotifier를 import
-import '../../utils/sound_helper.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -13,6 +12,35 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  bool _alarm = true;
+  bool _vibration = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPrefs();
+  }
+
+  Future<void> _loadPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _alarm = prefs.getBool('alarm') ?? true;
+      _vibration = prefs.getBool('vibration') ?? false;
+    });
+  }
+
+  Future<void> _setAlarm(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('alarm', value);
+    setState(() => _alarm = value);
+  }
+
+  Future<void> _setVibration(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('vibration', value);
+    setState(() => _vibration = value);
+  }
+
   void _showResetDialog(BuildContext context) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -50,42 +78,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Expanded(
             child: ListView(
               children: [
+                // 알림 설정
                 ListTile(
                   leading: const Icon(Icons.notifications),
-                  title: const Text('알림 설정'),
-                  onTap:
-                      () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => const NotificationSettingsScreen(),
-                        ),
-                      ),
+                  title: const Text('타이머 완료 알림'),
+                  subtitle: const Text('타이머가 끝났을 때 알림 표시'),
+                  trailing: Switch(value: _alarm, onChanged: _setAlarm),
                 ),
 
-                // 사운드 설정 추가
-                FutureBuilder<bool>(
-                  future: SoundHelper.isSoundEnabled(),
-                  builder: (context, snapshot) {
-                    return ListTile(
-                      leading: const Icon(Icons.volume_up),
-                      title: const Text('사운드 효과'),
-                      subtitle: const Text('타이머 시작/일시정지/완료 시 소리'),
-                      trailing: Switch(
-                        value: snapshot.data ?? true,
-                        onChanged: (val) async {
-                          await SoundHelper.setSoundEnabled(val);
-                          if (val) {
-                            // 사운드 활성화 시 테스트 사운드 재생
-                            SoundHelper.playClickSound();
-                          }
-                          // UI 새로고침을 위해 setState 호출
-                          setState(() {});
-                        },
-                      ),
-                    );
-                  },
-                ),
+                // 진동 설정 (알림이 켜져있을 때만 표시)
+                if (_alarm)
+                  ListTile(
+                    leading: const Icon(Icons.vibration),
+                    title: const Text('진동'),
+                    subtitle: const Text('알림과 함께 진동'),
+                    trailing: Switch(
+                      value: _vibration,
+                      onChanged: _setVibration,
+                    ),
+                  ),
+
+                const Divider(),
                 ListTile(
                   leading: const Icon(Icons.dark_mode),
                   title: const Text('다크모드'),
@@ -118,69 +131,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               subtitle: const Text('v1.0.0'),
               enabled: false,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class NotificationSettingsScreen extends StatefulWidget {
-  const NotificationSettingsScreen({super.key});
-
-  @override
-  State<NotificationSettingsScreen> createState() =>
-      _NotificationSettingsScreenState();
-}
-
-class _NotificationSettingsScreenState
-    extends State<NotificationSettingsScreen> {
-  bool _alarm = true;
-  bool _vibration = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadPrefs();
-  }
-
-  Future<void> _loadPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _alarm = prefs.getBool('alarm') ?? true;
-      _vibration = prefs.getBool('vibration') ?? false;
-    });
-  }
-
-  Future<void> _setAlarm(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('alarm', value);
-    setState(() => _alarm = value);
-  }
-
-  Future<void> _setVibration(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('vibration', value);
-    setState(() => _vibration = value);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('알림 설정')),
-      body: ListView(
-        children: [
-          SwitchListTile(
-            title: const Text('타이머 종료 시 알림'),
-            value: _alarm,
-            onChanged: (val) async {
-              await _setAlarm(val);
-            },
-          ),
-          SwitchListTile(
-            title: const Text('타이머 종료 시 진동'),
-            value: _vibration,
-            onChanged: _setVibration,
           ),
         ],
       ),
