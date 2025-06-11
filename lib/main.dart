@@ -6,12 +6,17 @@ import 'app/main_tab_controller.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'data/study_timer_model.dart';
 import 'data/study_record_model.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'dart:io';
 
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 한국어 로케일 초기화
+  await initializeDateFormatting('ko_KR', null);
+
   await Hive.initFlutter();
   Hive.registerAdapter(StudyTimerModelAdapter());
   Hive.registerAdapter(StudyRecordModelAdapter());

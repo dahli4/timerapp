@@ -4,7 +4,12 @@ import 'dart:math';
 class TimerCirclePainter extends CustomPainter {
   final double progress;
   final Color bgColor;
-  TimerCirclePainter({required this.progress, required this.bgColor});
+  final Color progressColor;
+  TimerCirclePainter({
+    required this.progress,
+    required this.bgColor,
+    required this.progressColor,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -25,7 +30,7 @@ class TimerCirclePainter extends CustomPainter {
     // 진행 도넛(색상)
     final progressPaint =
         Paint()
-          ..color = Colors.red
+          ..color = progressColor
           ..style = PaintingStyle.stroke
           ..strokeWidth = strokeWidth
           ..strokeCap = StrokeCap.butt;
@@ -45,6 +50,8 @@ class TimerCirclePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant TimerCirclePainter oldDelegate) {
-    return oldDelegate.progress != progress || oldDelegate.bgColor != bgColor;
+    return oldDelegate.progress != progress ||
+        oldDelegate.bgColor != bgColor ||
+        oldDelegate.progressColor != progressColor;
   }
 }
