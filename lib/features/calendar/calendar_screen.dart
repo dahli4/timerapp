@@ -64,6 +64,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 firstDay: DateTime.utc(2020, 1, 1),
                 lastDay: DateTime.utc(2030, 12, 31),
                 focusedDay: _focusedDay,
+                locale: 'ko_KR', // 한국어 로케일 설정
+                startingDayOfWeek: StartingDayOfWeek.sunday, // 일요일부터 시작
                 selectedDayPredicate:
                     (day) =>
                         _selectedDay != null &&
@@ -92,6 +94,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   rightChevronIcon: Icon(
                     Icons.chevron_right,
                     color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                daysOfWeekStyle: DaysOfWeekStyle(
+                  weekdayStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  weekendStyle: TextStyle(
+                    color:
+                        Theme.of(context).brightness == Brightness.dark
+                            ? Colors.red.shade300
+                            : Colors.red.shade400,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 calendarStyle: CalendarStyle(
@@ -140,17 +155,42 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     color: Theme.of(context).colorScheme.onSecondary,
                     fontWeight: FontWeight.bold,
                   ),
-                  markerDecoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.green.shade400, Colors.green.shade600],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    shape: BoxShape.circle,
-                  ),
-                  markersAlignment: Alignment.bottomCenter,
-                  markersMaxCount: 3,
-                  markerSizeScale: 0.15,
+                  // 기본 마커 스타일 제거 - calendarBuilders에서 커스텀 마커 사용
+                ),
+                // 커스텀 마커 빌더
+                calendarBuilders: CalendarBuilders(
+                  markerBuilder: (context, day, events) {
+                    if (events.isEmpty) return null;
+
+                    // 해당 날짜의 첫 번째 기록의 타이머 색상 사용
+                    final firstRecord = events.first as StudyRecordModel;
+                    final timer = _timerBox.values.firstWhere(
+                      (t) => t.id == firstRecord.timerId,
+                      orElse:
+                          () => StudyTimerModel(
+                            id: '',
+                            title: '알 수 없음',
+                            durationMinutes: 0,
+                            createdAt: DateTime.now(),
+                          ),
+                    );
+                    final color =
+                        timer.colorHex != null
+                            ? Color(timer.colorHex!)
+                            : Colors.blue.shade600;
+
+                    return Positioned(
+                      bottom: 1,
+                      child: Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    );
+                  },
                 ),
                 eventLoader: (day) => _getRecordsForDay(day),
               ),

@@ -286,7 +286,7 @@ class SubjectDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           SizedBox(
-            height: 120,
+            height: 160, // 높이를 늘려서 overflow 방지
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children:
@@ -304,20 +304,25 @@ class SubjectDetailScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min, // 최소 크기로 제한
                           children: [
+                            // 분 텍스트
                             Text(
                               '${entry.value}분',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 11, // 폰트 크기 줄임
                                 color: Theme.of(
                                   context,
                                 ).colorScheme.onSurface.withOpacity(0.7),
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 4),
+                            // 바 차트
                             Container(
                               width: double.infinity,
-                              height: height,
+                              height: height.clamp(4.0, 80.0), // 최대 높이 제한
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
@@ -330,14 +335,17 @@ class SubjectDetailScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 6), // 간격 줄임
+                            // 날짜 텍스트
                             Text(
                               dateStr,
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 11, // 폰트 크기 줄임
                                 fontWeight: FontWeight.w500,
                                 color: Theme.of(context).colorScheme.onSurface,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),

@@ -30,6 +30,7 @@ class _TimerRunScreenState extends State<TimerRunScreen>
   bool _recordSaved = false; // 1분 이상 기록 저장 여부
   bool _isRunning = false;
   DateTime? _startTime;
+  DateTime? _pausedTime; // 정지한 시간 저장
 
   @override
   void initState() {
@@ -80,6 +81,7 @@ class _TimerRunScreenState extends State<TimerRunScreen>
 
     setState(() {
       _isRunning = true;
+      _pausedTime = null; // 재개할 때 정지 시간 초기화
       _startTime = DateTime.now().subtract(
         Duration(milliseconds: (_elapsedSeconds * 1000).toInt()),
       );
@@ -102,6 +104,7 @@ class _TimerRunScreenState extends State<TimerRunScreen>
 
     setState(() {
       _isRunning = false;
+      _pausedTime = DateTime.now(); // 정지한 현재 시간 저장
     });
     _ticker?.stop();
     cancelTimerNotification();
@@ -117,6 +120,7 @@ class _TimerRunScreenState extends State<TimerRunScreen>
       _elapsedSeconds = 0;
       _isRunning = false;
       _startTime = null;
+      _pausedTime = null; // 정지 시간도 초기화
       _recordSaved = false;
     });
     _ticker?.stop();
@@ -285,6 +289,12 @@ class _TimerRunScreenState extends State<TimerRunScreen>
         isDark ? Colors.white : Colors.black87; // 라이트모드에서 살짝 검은색
     final timerBgColor = isDark ? Colors.grey.shade700 : Colors.grey.shade300;
 
+    // 타이머의 라벨 색상 추출
+    final timerColor =
+        _timer.colorHex != null
+            ? Color(_timer.colorHex!)
+            : Colors.blue.shade600;
+
     return Scaffold(
       appBar: AppBar(title: Text(_title), elevation: 0, centerTitle: true),
       body: Center(
@@ -299,6 +309,7 @@ class _TimerRunScreenState extends State<TimerRunScreen>
                   painter: TimerCirclePainter(
                     progress: progress,
                     bgColor: timerBgColor, // 배경색 전달
+                    progressColor: timerColor, // 타이머 색상 전달
                   ),
                 ),
                 Text(
@@ -311,21 +322,27 @@ class _TimerRunScreenState extends State<TimerRunScreen>
                 ),
               ],
             ),
-            // 정지한 시간 표시
-            if (!_isRunning && _elapsedSeconds > 0)
-              Padding(
-                padding: const EdgeInsets.only(top: 24.0, bottom: 8.0),
-                child: Text(
-                  '정지한 시각: '
-                  '${(_elapsedSeconds ~/ 60).toString().padLeft(2, '0')}:'
-                  '${(_elapsedSeconds % 60).toInt().toString().padLeft(2, '0')}',
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: isDark ? Colors.white70 : Colors.black54,
-                  ),
-                ),
-              ),
-            const SizedBox(height: 44),
+            // 정지한 시간 표시 (공간은 항상 유지, 텍스트만 조건부)
+            Container(
+              height: 60,
+              alignment: Alignment.center,
+              child:
+                  _pausedTime != null
+                      ? Padding(
+                        padding: const EdgeInsets.only(top: 16.0, bottom: 12.0),
+                        child: Text(
+                          '정지한 시각: '
+                          '${_pausedTime!.hour.toString().padLeft(2, '0')}:'
+                          '${_pausedTime!.minute.toString().padLeft(2, '0')}',
+                          style: TextStyle(
+                            fontSize: 20,
+                            color: isDark ? Colors.white70 : Colors.black54,
+                          ),
+                        ),
+                      )
+                      : const SizedBox.shrink(), // 공간은 유지하되 텍스트만 숨김
+            ),
+            const SizedBox(height: 24), // 고정 간격
             // 동기부여 메시지 추가
             _buildMotivationalMessage(progress, _elapsedSeconds, isDark),
             const SizedBox(height: 24),
