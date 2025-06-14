@@ -13,7 +13,6 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _alarm = true;
-  bool _vibration = false;
 
   @override
   void initState() {
@@ -25,7 +24,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _alarm = prefs.getBool('alarm') ?? true;
-      _vibration = prefs.getBool('vibration') ?? false;
     });
   }
 
@@ -33,12 +31,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('alarm', value);
     setState(() => _alarm = value);
-  }
-
-  Future<void> _setVibration(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('vibration', value);
-    setState(() => _vibration = value);
   }
 
   void _showResetDialog(BuildContext context) async {
@@ -85,18 +77,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: const Text('타이머가 끝났을 때 알림 표시'),
                   trailing: Switch(value: _alarm, onChanged: _setAlarm),
                 ),
-
-                // 진동 설정 (알림이 켜져있을 때만 표시)
-                if (_alarm)
-                  ListTile(
-                    leading: const Icon(Icons.vibration),
-                    title: const Text('진동'),
-                    subtitle: const Text('알림과 함께 진동'),
-                    trailing: Switch(
-                      value: _vibration,
-                      onChanged: _setVibration,
-                    ),
-                  ),
 
                 const Divider(),
                 ListTile(

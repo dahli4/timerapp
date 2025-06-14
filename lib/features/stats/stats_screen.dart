@@ -173,7 +173,10 @@ class _StatsScreenState extends State<StatsScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
-            colors: [color.withOpacity(0.03), color.withOpacity(0.08)],
+            colors: [
+              color.withValues(alpha: 0.03),
+              color.withValues(alpha: 0.08),
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -183,7 +186,7 @@ class _StatsScreenState extends State<StatsScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
+                color: color.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 28),
@@ -199,7 +202,7 @@ class _StatsScreenState extends State<StatsScreen> {
                       fontSize: 14,
                       color: Theme.of(
                         context,
-                      ).colorScheme.onSurface.withOpacity(0.7),
+                      ).colorScheme.onSurface.withValues(alpha: 0.7),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -248,8 +251,8 @@ class _StatsScreenState extends State<StatsScreen> {
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             colors: [
-              Theme.of(context).colorScheme.primary.withOpacity(0.03),
-              Theme.of(context).colorScheme.primary.withOpacity(0.08),
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.03),
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -265,7 +268,7 @@ class _StatsScreenState extends State<StatsScreen> {
                   decoration: BoxDecoration(
                     color: Theme.of(
                       context,
-                    ).colorScheme.primary.withOpacity(0.15),
+                    ).colorScheme.primary.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -297,7 +300,7 @@ class _StatsScreenState extends State<StatsScreen> {
                         size: 48,
                         color: Theme.of(
                           context,
-                        ).colorScheme.onSurface.withOpacity(0.3),
+                        ).colorScheme.onSurface.withValues(alpha: 0.3),
                       ),
                       const SizedBox(height: 12),
                       Text(
@@ -305,7 +308,7 @@ class _StatsScreenState extends State<StatsScreen> {
                         style: TextStyle(
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withOpacity(0.5),
+                          ).colorScheme.onSurface.withValues(alpha: 0.5),
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                         ),
@@ -361,7 +364,7 @@ class _StatsScreenState extends State<StatsScreen> {
                         BoxShadow(
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withOpacity(0.08),
+                          ).colorScheme.onSurface.withValues(alpha: 0.08),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -369,7 +372,7 @@ class _StatsScreenState extends State<StatsScreen> {
                       border: Border.all(
                         color: Theme.of(
                           context,
-                        ).colorScheme.onSurface.withOpacity(0.08),
+                        ).colorScheme.onSurface.withValues(alpha: 0.08),
                         width: 1,
                       ),
                     ),
@@ -385,7 +388,7 @@ class _StatsScreenState extends State<StatsScreen> {
                               gradient: LinearGradient(
                                 colors: [
                                   subjectColor,
-                                  subjectColor.withOpacity(0.7),
+                                  subjectColor.withValues(alpha: 0.7),
                                 ],
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
@@ -412,7 +415,7 @@ class _StatsScreenState extends State<StatsScreen> {
                             decoration: BoxDecoration(
                               color: Theme.of(
                                 context,
-                              ).colorScheme.primary.withOpacity(0.1),
+                              ).colorScheme.primary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
@@ -430,7 +433,7 @@ class _StatsScreenState extends State<StatsScreen> {
                             size: 16,
                             color: Theme.of(
                               context,
-                            ).colorScheme.onSurface.withOpacity(0.4),
+                            ).colorScheme.onSurface.withValues(alpha: 0.4),
                           ),
                         ],
                       ),
@@ -467,8 +470,8 @@ class _StatsScreenState extends State<StatsScreen> {
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             colors: [
-              Colors.teal.withOpacity(0.03),
-              Colors.teal.withOpacity(0.08),
+              Colors.teal.withValues(alpha: 0.03),
+              Colors.teal.withValues(alpha: 0.08),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -482,7 +485,7 @@ class _StatsScreenState extends State<StatsScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.teal.withOpacity(0.15),
+                    color: Colors.teal.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -545,7 +548,7 @@ class _StatsScreenState extends State<StatsScreen> {
                               fontSize: 11,
                               color: Theme.of(
                                 context,
-                              ).colorScheme.onSurface.withOpacity(0.7),
+                              ).colorScheme.onSurface.withValues(alpha: 0.7),
                             ),
                           ),
                           Text(
@@ -556,9 +559,8 @@ class _StatsScreenState extends State<StatsScreen> {
                               color:
                                   minutes > 0
                                       ? Colors.teal.shade600
-                                      : Theme.of(
-                                        context,
-                                      ).colorScheme.onSurface.withOpacity(0.5),
+                                      : Theme.of(context).colorScheme.onSurface
+                                          .withValues(alpha: 0.5),
                             ),
                           ),
                         ],
@@ -588,8 +590,8 @@ class _StatsScreenState extends State<StatsScreen> {
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             colors: [
-              Colors.amber.withOpacity(0.03),
-              Colors.amber.withOpacity(0.08),
+              Colors.amber.withValues(alpha: 0.03),
+              Colors.amber.withValues(alpha: 0.08),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -600,7 +602,7 @@ class _StatsScreenState extends State<StatsScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.amber.withOpacity(0.15),
+                color: Colors.amber.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -620,7 +622,7 @@ class _StatsScreenState extends State<StatsScreen> {
                       fontSize: 14,
                       color: Theme.of(
                         context,
-                      ).colorScheme.onSurface.withOpacity(0.7),
+                      ).colorScheme.onSurface.withValues(alpha: 0.7),
                       fontWeight: FontWeight.w500,
                     ),
                   ),

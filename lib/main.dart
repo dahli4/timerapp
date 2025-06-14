@@ -58,100 +58,103 @@ class MyApp extends StatelessWidget {
           locale: const Locale('ko', 'KR'), // 기본 로케일을 한국어로 설정
           theme: ThemeData.light().copyWith(
             colorScheme: ThemeData.light().colorScheme.copyWith(
-              primary: Colors.grey.shade700,
-              secondary: Colors.grey.shade600,
+              primary: const Color(0xFF5A9FD4), // 라이트블루
+              secondary: const Color(0xFF87CEEB), // 연한 라이트블루
               onPrimary: Colors.white,
-              onSurface: Colors.black87,
-              surface: Colors.white,
+              onSurface: const Color(0xFF2C3E50), // 다크 블루그레이
+              surface: const Color(0xFFF5F3F0), // 연한 베이지
             ),
-            scaffoldBackgroundColor: Colors.white,
-            appBarTheme: AppBarTheme(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black87,
+            scaffoldBackgroundColor: const Color(0xFFF9F7F4), // 베이지 배경
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFFF9F7F4), // 베이지 배경
+              foregroundColor: Color(0xFF2C3E50), // 다크 블루그레이
               elevation: 0,
               centerTitle: true,
             ),
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white,
-                backgroundColor: Colors.grey.shade700,
-                disabledBackgroundColor: Colors.grey.shade400,
+                backgroundColor: const Color(0xFF5A9FD4), // 라이트블루
+                disabledBackgroundColor: const Color(0xFFBDC3C7),
                 disabledForegroundColor: Colors.white70,
               ),
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                foregroundColor: Colors.grey.shade700,
+                foregroundColor: const Color(0xFF5A9FD4), // 라이트블루
               ),
             ),
-            dialogTheme: DialogTheme(
-              backgroundColor: Colors.white,
+            dialogTheme: const DialogTheme(
+              backgroundColor: Color(0xFFF9F7F4), // 베이지 배경
               surfaceTintColor: Colors.transparent,
             ),
             switchTheme: SwitchThemeData(
               thumbColor: WidgetStateProperty.resolveWith((states) {
                 if (states.contains(WidgetState.selected)) {
-                  return Colors.grey.shade700;
+                  return const Color(0xFF5A9FD4); // 라이트블루
                 }
-                return Colors.grey.shade400;
+                return const Color(0xFFBDC3C7);
               }),
               trackColor: WidgetStateProperty.resolveWith((states) {
                 if (states.contains(WidgetState.selected)) {
-                  return Colors.grey.shade300;
+                  return const Color(0xFF87CEEB); // 연한 라이트블루
                 }
-                return Colors.grey.shade200;
+                return const Color(0xFFECF0F1);
               }),
             ),
           ),
           darkTheme: ThemeData.dark().copyWith(
             colorScheme: ThemeData.dark().colorScheme.copyWith(
-              primary: Colors.grey.shade300,
-              secondary: Colors.grey.shade400,
-              onPrimary: Colors.black87,
-              onSurface: Colors.white,
-              surface: Colors.grey.shade900,
+              primary: const Color(0xFF87CEEB), // 스카이블루 (다크모드용)
+              secondary: const Color(0xFF5A9FD4), // 라이트블루
+              onPrimary: const Color(0xFF2C3E50), // 다크 블루그레이
+              onSurface: const Color(0xFFF5F3F0), // 연한 베이지 (텍스트용)
+              surface: const Color(0xFF3E3B36), // 다크 베이지
             ),
-            scaffoldBackgroundColor: Colors.grey.shade900,
-            appBarTheme: AppBarTheme(
-              backgroundColor: Colors.grey.shade900,
-              foregroundColor: Colors.white,
+            scaffoldBackgroundColor: const Color(0xFF2F2D28), // 더 진한 다크 베이지
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFF2F2D28), // 더 진한 다크 베이지
+              foregroundColor: Color(0xFFF5F3F0), // 연한 베이지 (텍스트)
               elevation: 0,
               centerTitle: true,
             ),
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.black87,
-                backgroundColor: Colors.grey.shade300,
-                disabledBackgroundColor: Colors.grey.shade600,
-                disabledForegroundColor: Colors.grey.shade400,
+                foregroundColor: Colors.white,
+                backgroundColor: const Color(0xFF5A9FD4), // 라이트블루 유지
+                disabledBackgroundColor: const Color(0xFF6B6B6B),
+                disabledForegroundColor: const Color(0xFFBDBDBD),
               ),
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                foregroundColor: Colors.grey.shade300,
+                foregroundColor: const Color(0xFF87CEEB), // 스카이블루
               ),
             ),
-            cardTheme: CardTheme(color: Colors.grey.shade800, elevation: 2),
-            dialogTheme: DialogTheme(
-              backgroundColor: Colors.grey.shade800,
+            cardTheme: const CardTheme(
+              color: Color(0xFF3E3B36), // 다크 베이지
+              elevation: 2,
+            ),
+            dialogTheme: const DialogTheme(
+              backgroundColor: Color(0xFF3E3B36), // 다크 베이지
               surfaceTintColor: Colors.transparent,
             ),
             textTheme: ThemeData.dark().textTheme.apply(
-              bodyColor: Colors.white,
-              displayColor: Colors.white,
+              bodyColor: const Color(0xFFF5F3F0), // 연한 베이지
+              displayColor: const Color(0xFFF5F3F0), // 연한 베이지
             ),
             switchTheme: SwitchThemeData(
               thumbColor: WidgetStateProperty.resolveWith((states) {
                 if (states.contains(WidgetState.selected)) {
-                  return Colors.grey.shade300;
+                  return const Color(0xFF87CEEB); // 스카이블루
                 }
-                return Colors.grey.shade600;
+                return const Color(0xFF6B6B6B);
               }),
               trackColor: WidgetStateProperty.resolveWith((states) {
                 if (states.contains(WidgetState.selected)) {
-                  return Colors.grey.shade800; // 다크모드에서 더 어둡게
+                  return const Color(0xFF5A9FD4); // 라이트블루
                 }
-                return Colors.grey.shade700;
+                return const Color(0xFF4A4A4A);
               }),
             ),
           ),

@@ -23,7 +23,6 @@ Future<void> showTimerDialog({
     Colors.cyan.shade500,
   ];
 
-  // 현재 값이 비어있으면 빈 문자열로, 아니면 그대로 사용
   ValueNotifier<String> durationDisplayNotifier = ValueNotifier(
     durationController.text.isEmpty ? '' : durationController.text,
   );
@@ -31,34 +30,35 @@ Future<void> showTimerDialog({
   return showDialog(
     context: context,
     barrierDismissible: true,
-    builder:
-        (context) => Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 40,
+    builder: (context) {
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(maxWidth: 400),
+          margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-          child: Container(
-            width: double.infinity,
-            constraints: const BoxConstraints(maxWidth: 400),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color:
-                  Theme.of(context).brightness == Brightness.light
-                      ? Colors.white
-                      : Theme.of(context).colorScheme.surface,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color:
+                Theme.of(context).brightness == Brightness.light
+                    ? Colors.white
+                    : Theme.of(context).colorScheme.surface,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Simple header
+                // Header
                 Padding(
                   padding: const EdgeInsets.only(
                     left: 20,
@@ -91,7 +91,7 @@ Future<void> showTimerDialog({
                           Icons.close,
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withOpacity(0.6),
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
                           size: 20,
                         ),
                       ),
@@ -123,7 +123,7 @@ Future<void> showTimerDialog({
                             borderSide: BorderSide(
                               color: Theme.of(
                                 context,
-                              ).colorScheme.outline.withOpacity(0.3),
+                              ).colorScheme.outline.withValues(alpha: 0.3),
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
@@ -131,7 +131,7 @@ Future<void> showTimerDialog({
                             borderSide: BorderSide(
                               color: Theme.of(
                                 context,
-                              ).colorScheme.outline.withOpacity(0.3),
+                              ).colorScheme.outline.withValues(alpha: 0.3),
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
@@ -161,7 +161,7 @@ Future<void> showTimerDialog({
                       ValueListenableBuilder<String>(
                         valueListenable: durationDisplayNotifier,
                         builder:
-                            (context, duration, _) => _TimeSelector(
+                            (context, duration, _) => TimeSelectorWidget(
                               durationController: durationController,
                               durationDisplayNotifier: durationDisplayNotifier,
                             ),
@@ -186,12 +186,12 @@ Future<void> showTimerDialog({
                               decoration: BoxDecoration(
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.surface.withOpacity(0.5),
+                                ).colorScheme.surface.withValues(alpha: 0.5),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: Theme.of(
                                     context,
-                                  ).colorScheme.outline.withOpacity(0.2),
+                                  ).colorScheme.outline.withValues(alpha: 0.2),
                                 ),
                               ),
                               child: Column(
@@ -207,8 +207,8 @@ Future<void> showTimerDialog({
                                           shape: BoxShape.circle,
                                           boxShadow: [
                                             BoxShadow(
-                                              color: selectedColor.withOpacity(
-                                                0.3,
+                                              color: selectedColor.withValues(
+                                                alpha: 0.3,
                                               ),
                                               blurRadius: 4,
                                               offset: const Offset(0, 2),
@@ -225,7 +225,7 @@ Future<void> showTimerDialog({
                                           color: Theme.of(context)
                                               .colorScheme
                                               .onSurface
-                                              .withOpacity(0.7),
+                                              .withValues(alpha: 0.7),
                                         ),
                                       ),
                                     ],
@@ -236,7 +236,7 @@ Future<void> showTimerDialog({
                                     physics:
                                         const NeverScrollableScrollPhysics(),
                                     gridDelegate:
-                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                        const SliverGridDelegateWithFixedCrossAxisCount(
                                           crossAxisCount: 5,
                                           mainAxisSpacing: 12,
                                           crossAxisSpacing: 12,
@@ -246,7 +246,7 @@ Future<void> showTimerDialog({
                                     itemBuilder: (context, index) {
                                       final color = colors[index];
                                       final isSelected = selectedColor == color;
-                                      return _ColorButton(
+                                      return ColorButtonWidget(
                                         color: color,
                                         isSelected: isSelected,
                                         onTap:
@@ -288,7 +288,7 @@ Future<void> showTimerDialog({
                               fontWeight: FontWeight.w600,
                               color: Theme.of(
                                 context,
-                              ).colorScheme.onSurface.withOpacity(0.7),
+                              ).colorScheme.onSurface.withValues(alpha: 0.7),
                             ),
                           ),
                         ),
@@ -324,15 +324,17 @@ Future<void> showTimerDialog({
             ),
           ),
         ),
+      );
+    },
   );
 }
 
-// 깔끔한 시간 선택 위젯
-class _TimeSelector extends StatelessWidget {
+class TimeSelectorWidget extends StatelessWidget {
   final TextEditingController durationController;
   final ValueNotifier<String> durationDisplayNotifier;
 
-  const _TimeSelector({
+  const TimeSelectorWidget({
+    super.key,
     required this.durationController,
     required this.durationDisplayNotifier,
   });
@@ -344,7 +346,7 @@ class _TimeSelector extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
           ),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -368,7 +370,9 @@ class _TimeSelector extends StatelessWidget {
               ),
               Icon(
                 Icons.keyboard_arrow_down,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ],
           ),
@@ -384,7 +388,7 @@ class _TimeSelector extends StatelessWidget {
         '시간 선택',
         style: TextStyle(
           fontSize: 16,
-          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
         ),
       );
     }
@@ -447,7 +451,7 @@ class _TimeSelector extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Theme.of(
                     context,
-                  ).colorScheme.onSurface.withOpacity(0.3),
+                  ).colorScheme.onSurface.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -499,13 +503,13 @@ class _TimeSelector extends StatelessWidget {
   }
 }
 
-// 깔끔한 색상 버튼 위젯
-class _ColorButton extends StatelessWidget {
+class ColorButtonWidget extends StatelessWidget {
   final Color color;
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _ColorButton({
+  const ColorButtonWidget({
+    super.key,
     required this.color,
     required this.isSelected,
     required this.onTap,
@@ -525,7 +529,7 @@ class _ColorButton extends StatelessWidget {
           color: color,
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.4),
+              color: color.withValues(alpha: 0.4),
               blurRadius: isSelected ? 10 : 4,
               offset: Offset(0, isSelected ? 4 : 2),
             ),
@@ -544,12 +548,7 @@ class _ColorButton extends StatelessWidget {
                         shape: BoxShape.circle,
                         color: Colors.white,
                       ),
-                      child: Icon(
-                        Icons.check,
-                        color: color,
-                        size: 10,
-                        weight: 700,
-                      ),
+                      child: Icon(Icons.check, color: color, size: 10),
                     ),
                   )
                   : null,

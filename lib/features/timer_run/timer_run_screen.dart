@@ -45,8 +45,15 @@ class _TimerRunScreenState extends State<TimerRunScreen>
     _ticker = createTicker((_) {
       if (!_isRunning) return;
       final now = DateTime.now();
+      final calculatedElapsed =
+          now.difference(_startTime!).inMilliseconds / 1000.0;
+
       setState(() {
-        _elapsedSeconds = now.difference(_startTime!).inMilliseconds / 1000.0;
+        // 타이머 완료 시간을 초과하지 않도록 제한
+        _elapsedSeconds = calculatedElapsed.clamp(
+          0.0,
+          _totalSeconds.toDouble(),
+        );
 
         if (_elapsedSeconds >= 60 && !_recordSaved) {
           _saveRecord();
@@ -135,12 +142,28 @@ class _TimerRunScreenState extends State<TimerRunScreen>
 
   void _saveRecord() async {
     final recordBox = Hive.box<StudyRecordModel>('records');
+
+    // 타이머가 완료된 경우: 설정된 시간 정확히 저장
+    // 일시정지/중단된 경우: 실제 경과 시간 저장
+    int minutesToSave;
+    int secondsToSave;
+
+    if (_elapsedSeconds >= _totalSeconds) {
+      // 타이머 완료 시: 설정된 정확한 시간 저장
+      minutesToSave = _durationMinutes;
+      secondsToSave = 0;
+    } else {
+      // 일시정지나 중간 저장 시: 실제 경과 시간 저장
+      minutesToSave = _elapsedSeconds ~/ 60;
+      secondsToSave = (_elapsedSeconds % 60).toInt();
+    }
+
     await recordBox.add(
       StudyRecordModel(
         timerId: widget.timer.id,
         date: DateTime.now(),
-        minutes: _elapsedSeconds ~/ 60,
-        seconds: (_elapsedSeconds % 60).toInt(),
+        minutes: minutesToSave,
+        seconds: secondsToSave,
       ),
     );
   }
@@ -198,8 +221,33 @@ class _TimerRunScreenState extends State<TimerRunScreen>
     if (state == AppLifecycleState.resumed && _isRunning) {
       if (_startTime != null) {
         final now = DateTime.now();
+        final calculatedElapsed =
+            now.difference(_startTime!).inMilliseconds / 1000.0;
+
         setState(() {
-          _elapsedSeconds = now.difference(_startTime!).inMilliseconds / 1000.0;
+          // 타이머 완료 시간을 초과하지 않도록 제한
+          _elapsedSeconds = calculatedElapsed.clamp(
+            0.0,
+            _totalSeconds.toDouble(),
+          );
+
+          // 타이머가 완료되었으면 완료 처리
+          if (_elapsedSeconds >= _totalSeconds) {
+            _elapsedSeconds = _totalSeconds.toDouble();
+            _isRunning = false;
+            _ticker?.stop();
+            if (!_recordSaved) {
+              _saveRecord();
+              _recordSaved = true;
+            }
+            // 타이머 완료 햅틱 피드백
+            SoundHelper.playCompleteFeedback();
+            // 예약된 알림 외에도 직접 알림 표시
+            _showCompletionNotification();
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('타이머 종료!')));
+          }
         });
       }
     }
@@ -256,9 +304,9 @@ class _TimerRunScreenState extends State<TimerRunScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

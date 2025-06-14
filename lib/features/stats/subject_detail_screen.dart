@@ -50,7 +50,7 @@ class SubjectDetailScreen extends StatelessWidget {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: subjectColor.withOpacity(0.1),
+              color: subjectColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -73,7 +73,7 @@ class SubjectDetailScreen extends StatelessWidget {
             '$subjectName 타이머를 시작해보세요!',
             style: TextStyle(
               fontSize: 16,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -156,14 +156,14 @@ class SubjectDetailScreen extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [subjectColor, subjectColor.withOpacity(0.8)],
+          colors: [subjectColor, subjectColor.withValues(alpha: 0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: subjectColor.withOpacity(0.3),
+            color: subjectColor.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -175,7 +175,7 @@ class SubjectDetailScreen extends StatelessWidget {
           Text(
             '총 공부 시간',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
@@ -193,7 +193,7 @@ class SubjectDetailScreen extends StatelessWidget {
             Text(
               '$seconds초',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 16,
               ),
             ),
@@ -210,7 +210,7 @@ class SubjectDetailScreen extends StatelessWidget {
               Container(
                 width: 1,
                 height: 40,
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
               ),
               Expanded(
                 child: _buildStatItem(
@@ -229,7 +229,7 @@ class SubjectDetailScreen extends StatelessWidget {
   Widget _buildStatItem(String label, String value, IconData icon) {
     return Column(
       children: [
-        Icon(icon, color: Colors.white.withOpacity(0.9), size: 24),
+        Icon(icon, color: Colors.white.withValues(alpha: 0.9), size: 24),
         const SizedBox(height: 8),
         Text(
           value,
@@ -241,7 +241,7 @@ class SubjectDetailScreen extends StatelessWidget {
         ),
         Text(
           label,
-          style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14),
+          style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14),
         ),
       ],
     );
@@ -261,7 +261,7 @@ class SubjectDetailScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.08),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -313,7 +313,7 @@ class SubjectDetailScreen extends StatelessWidget {
                                 fontSize: 11, // 폰트 크기 줄임
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.onSurface.withOpacity(0.7),
+                                ).colorScheme.onSurface.withValues(alpha: 0.7),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -327,7 +327,7 @@ class SubjectDetailScreen extends StatelessWidget {
                                 gradient: LinearGradient(
                                   colors: [
                                     subjectColor,
-                                    subjectColor.withOpacity(0.7),
+                                    subjectColor.withValues(alpha: 0.7),
                                   ],
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
@@ -373,7 +373,7 @@ class SubjectDetailScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.08),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -410,10 +410,10 @@ class SubjectDetailScreen extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: subjectColor.withOpacity(0.1),
+                color: subjectColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: subjectColor.withOpacity(0.2),
+                  color: subjectColor.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -449,7 +449,7 @@ class SubjectDetailScreen extends StatelessWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: subjectColor.withOpacity(0.2),
+                                color: subjectColor.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -470,7 +470,7 @@ class SubjectDetailScreen extends StatelessWidget {
                             fontSize: 13,
                             color: Theme.of(
                               context,
-                            ).colorScheme.onSurface.withOpacity(0.6),
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                       ],
@@ -482,7 +482,7 @@ class SubjectDetailScreen extends StatelessWidget {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: subjectColor.withOpacity(0.15),
+                      color: subjectColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(

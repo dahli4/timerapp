@@ -43,23 +43,10 @@ flutter_launcher_icons:
   ios: true
   image_path: "assets/icon/timer_app_icon.png"
   min_sdk_android: 21
-  adaptive_icon_background: "#FEF7F0"
+  adaptive_icon_background: "#F9F7F4"
   adaptive_icon_foreground: "assets/icon/timer_app_icon.png"
-
-# flutter_native_splash:
-#   color: "#ffffff"
-#   color_dark: "#1a1a1a"
-#   image: assets/splash/splash_icon.svg
-#   image_dark: assets/splash/splash_icon_dark.svg
-#   android_12:
-#     image: assets/splash/splash_icon.svg
-#     icon_background_color: "#4A90E2"
-#     image_dark: assets/splash/splash_icon_dark.svg
-#     icon_background_color_dark: "#1a1a1a"
-#   web: false
 
 flutter:
   uses-material-design: true
   assets:
     - assets/icon/
-    - assets/splash/

@@ -20,19 +20,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       title: '집중 타이머로\n생산성을 높여보세요',
       description: '공부, 업무, 운동 등\n다양한 활동의 시간을 측정하고\n체계적으로 관리할 수 있어요',
       icon: Icons.timer_outlined,
-      color: Colors.blue,
+      color: const Color(0xFF5A9FD4), // 라이트블루
     ),
     OnboardingPage(
       title: '다양한 색상으로\n타이머를 구분하세요',
       description: '과목별, 활동별로 색상을 지정해\n쉽게 구분하고 관리할 수 있어요',
       icon: Icons.palette_outlined,
-      color: Colors.purple,
+      color: const Color(0xFF87CEEB), // 스카이블루
     ),
     OnboardingPage(
       title: '통계로 확인하는\n나의 성장',
       description: '일별, 주별 활동 기록을 확인하고\n달력에서 나의 성취를 확인해보세요',
       icon: Icons.analytics_outlined,
-      color: Colors.green,
+      color: const Color(0xFF4682B4), // 스틸블루
     ),
   ];
 
@@ -169,7 +169,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           width: 120,
                           height: 120,
                           decoration: BoxDecoration(
-                            color: page.color.withOpacity(0.1),
+                            color: page.color.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(page.icon, size: 60, color: page.color),
