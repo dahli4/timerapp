@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- 배경 -->
+  <rect width="1024" height="1024" rx="180" ry="180" fill="#FEF7F0"/>
+  
+  <!-- 타이머 캐릭터 본체 -->
+  <circle cx="512" cy="450" r="200" fill="#87CEEB" stroke="#4682B4" stroke-width="8"/>
+  
+  <!-- 시계 얼굴 -->
+  <circle cx="512" cy="450" r="160" fill="#FFFFFF" stroke="#4682B4" stroke-width="6"/>
+  
+  <!-- 시계 숫자 마크 -->
+  <circle cx="512" cy="320" r="8" fill="#4682B4"/>
+  <circle cx="582" cy="360" r="6" fill="#4682B4"/>
+  <circle cx="632" cy="450" r="8" fill="#4682B4"/>
+  <circle cx="582" cy="540" r="6" fill="#4682B4"/>
+  <circle cx="512" cy="580" r="8" fill="#4682B4"/>
+  <circle cx="442" cy="540" r="6" fill="#4682B4"/>
+  <circle cx="392" cy="450" r="8" fill="#4682B4"/>
+  <circle cx="442" cy="360" r="6" fill="#4682B4"/>
+  
+  <!-- 시계바늘 -->
+  <line x1="512" y1="450" x2="512" y2="380" stroke="#4682B4" stroke-width="6" stroke-linecap="round"/>
+  <line x1="512" y1="450" x2="570" y2="450" stroke="#4682B4" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="512" cy="450" r="12" fill="#4682B4"/>
+  
+  <!-- 알람벨 -->
+  <ellipse cx="400" cy="300" rx="30" ry="35" fill="#87CEEB" stroke="#4682B4" stroke-width="6"/>
+  <ellipse cx="624" cy="300" rx="30" ry="35" fill="#87CEEB" stroke="#4682B4" stroke-width="6"/>
+  
+  <!-- 와인딩 키 -->
+  <circle cx="512" cy="200" r="20" fill="#4682B4"/>
+  <rect x="502" y="160" width="20" height="40" rx="10" fill="#4682B4"/>
+  
+  <!-- 다리 -->
+  <ellipse cx="450" cy="650" rx="25" ry="60" fill="#87CEEB" stroke="#4682B4" stroke-width="6"/>
+  <ellipse cx="574" cy="650" rx="25" ry="60" fill="#87CEEB" stroke="#4682B4" stroke-width="6"/>
+  
+  <!-- 발 -->
+  <ellipse cx="430" cy="720" rx="40" ry="20" fill="#4682B4"/>
+  <ellipse cx="594" cy="720" rx="40" ry="20" fill="#4682B4"/>
+  
+  <!-- 팔 -->
+  <ellipse cx="350" cy="480" rx="60" ry="25" fill="#87CEEB" stroke="#4682B4" stroke-width="6" transform="rotate(-30 350 480)"/>
+  <ellipse cx="674" cy="480" rx="60" ry="25" fill="#87CEEB" stroke="#4682B4" stroke-width="6" transform="rotate(30 674 480)"/>
+  
+  <!-- 손 -->
+  <circle cx="310" cy="520" r="25" fill="#4682B4"/>
+  <circle cx="714" cy="520" r="25" fill="#4682B4"/>
+  
+  <!-- 파워/집중 이펙트 -->
+  <g stroke="#FFD700" stroke-width="4" fill="none">
+    <path d="M 280 460 Q 260 450 250 430"/>
+    <path d="M 290 500 Q 270 510 250 530"/>
+    <path d="M 744 460 Q 764 450 774 430"/>
+    <path d="M 734 500 Q 754 510 774 530"/>
+  </g>
+  
+  <!-- 그림자 -->
+  <ellipse cx="512" cy="780" rx="120" ry="20" fill="#D3D3D3" opacity="0.3"/>
+</svg>

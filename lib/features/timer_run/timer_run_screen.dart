@@ -95,7 +95,12 @@ class _TimerRunScreenState extends State<TimerRunScreen>
     scheduleTimerNotification(secondsLeft);
 
     // 백그라운드 알림도 함께 예약 (추가 보장)
-    scheduleBackgroundTimerNotification(_title, secondsLeft);
+    scheduleBackgroundTimerNotification(
+      _title,
+      _timer.id,
+      _durationMinutes,
+      secondsLeft,
+    );
   }
 
   void _pause() {

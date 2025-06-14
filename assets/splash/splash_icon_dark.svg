@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- 배경 투명 -->
+  <rect width="512" height="512" fill="none"/>
+  
+  <!-- 원형 테두리 -->
+  <circle cx="256" cy="256" r="200" fill="none" stroke="white" stroke-width="20"/>
+  
+  <!-- 시계바늘 -->
+  <line x1="256" y1="256" x2="256" y2="120" stroke="white" stroke-width="12" stroke-linecap="round"/>
+  <line x1="256" y1="256" x2="350" y2="256" stroke="white" stroke-width="8" stroke-linecap="round"/>
+  
+  <!-- 중심점 -->
+  <circle cx="256" cy="256" r="15" fill="white"/>
+</svg>

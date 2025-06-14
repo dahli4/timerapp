@@ -17,7 +17,7 @@ void callbackDispatcher() {
       }
       return Future.value(true);
     } catch (e) {
-      print('백그라운드 작업 실행 중 오류: $e');
+      // 프로덕션에서는 로깅 시스템 사용
       return Future.value(false);
     }
   });
@@ -44,6 +44,12 @@ Future<void> _showTimerCompletedNotification(
   final useVibration = prefs.getBool('vibration') ?? false;
 
   final timerTitle = inputData?['timerTitle'] ?? '타이머';
+  final timerId = inputData?['timerId'] ?? '';
+  final minutes = inputData?['minutes'] ?? 0;
+  final seconds = inputData?['seconds'] ?? 0;
+
+  // 백그라운드에서 완료된 타이머 데이터 저장 (SharedPreferences 사용)
+  await _saveBackgroundTimerRecord(prefs, timerId, minutes, seconds);
 
   await flutterLocalNotificationsPlugin.show(
     0,
@@ -71,6 +77,25 @@ Future<void> _showTimerCompletedNotification(
   );
 }
 
+// 백그라운드에서 완료된 타이머 기록 저장
+Future<void> _saveBackgroundTimerRecord(
+  SharedPreferences prefs,
+  String timerId,
+  int minutes,
+  int seconds,
+) async {
+  // 기존 백그라운드 기록들 가져오기
+  final existingRecords = prefs.getStringList('background_timer_records') ?? [];
+
+  // 새 기록 추가 (JSON 형태로 저장)
+  final newRecord =
+      '${DateTime.now().millisecondsSinceEpoch}|$timerId|$minutes|$seconds';
+  existingRecords.add(newRecord);
+
+  // SharedPreferences에 저장
+  await prefs.setStringList('background_timer_records', existingRecords);
+}
+
 // WorkManager를 초기화하는 함수 (Android만)
 Future<void> initializeWorkManager() async {
   if (!Platform.isAndroid) return;
@@ -84,17 +109,24 @@ Future<void> initializeWorkManager() async {
 // 백그라운드 타이머 알림을 예약하는 함수 (Android만)
 Future<void> scheduleBackgroundTimerNotification(
   String timerTitle,
-  int seconds,
+  String timerId,
+  int minutes,
+  int totalSeconds,
 ) async {
   if (!Platform.isAndroid) return;
 
   await Workmanager().registerOneOffTask(
     'timer_${DateTime.now().millisecondsSinceEpoch}', // 고유한 태스크 ID
     'timerNotification',
-    initialDelay: Duration(seconds: seconds), // delay -> initialDelay로 변경
-    inputData: {'timerTitle': timerTitle},
+    initialDelay: Duration(seconds: totalSeconds), // delay -> initialDelay로 변경
+    inputData: {
+      'timerTitle': timerTitle,
+      'timerId': timerId,
+      'minutes': minutes,
+      'seconds': 0, // 완료된 타이머이므로 초는 0
+    },
   );
-  print('백그라운드 타이머 알림 예약됨: $timerTitle, $seconds초 후');
+  // 백그라운드 타이머 알림 예약 완료
 }
 
 // 백그라운드 작업 취소 (Android만)
@@ -102,5 +134,5 @@ Future<void> cancelBackgroundTimerNotification() async {
   if (!Platform.isAndroid) return;
 
   await Workmanager().cancelAll();
-  print('모든 백그라운드 타이머 알림이 취소되었습니다');
+  // 모든 백그라운드 타이머 알림 취소 완료
 }

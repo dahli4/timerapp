@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:timerapp/utils/notification_helper.dart';
 import 'utils/background_notification_helper.dart';
+import 'utils/background_sync_helper.dart';
 import 'app/main_tab_controller.dart';
+import 'features/onboarding/onboarding_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'data/study_timer_model.dart';
 import 'data/study_record_model.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
@@ -153,9 +156,81 @@ class MyApp extends StatelessWidget {
             ),
           ),
           themeMode: mode,
-          home: const MainTabController(),
+          home: const AppWrapper(),
         );
       },
     );
+  }
+}
+
+class AppWrapper extends StatelessWidget {
+  const AppWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: _checkOnboardingStatus(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final onboardingCompleted = snapshot.data ?? false;
+        if (onboardingCompleted) {
+          return const StudyTimerApp();
+        } else {
+          return const OnboardingScreen();
+        }
+      },
+    );
+  }
+
+  Future<bool> _checkOnboardingStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('onboarding_completed') ?? false;
+  }
+}
+
+class StudyTimerApp extends StatefulWidget {
+  const StudyTimerApp({super.key});
+
+  @override
+  State<StudyTimerApp> createState() => _StudyTimerAppState();
+}
+
+class _StudyTimerAppState extends State<StudyTimerApp>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // 앱 시작 시 백그라운드 기록 동기화
+    _syncBackgroundRecords();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      // 앱이 포그라운드로 돌아올 때 백그라운드 기록 동기화
+      _syncBackgroundRecords();
+    }
+  }
+
+  Future<void> _syncBackgroundRecords() async {
+    await BackgroundSyncHelper.syncBackgroundRecords();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const MainTabController();
   }
 }
