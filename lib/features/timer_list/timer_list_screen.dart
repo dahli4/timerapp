@@ -56,14 +56,14 @@ class _TimerListScreenState extends State<TimerListScreen> {
         return Dialog(
           backgroundColor: Colors.transparent,
           insetPadding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: keyboardHeight > 0 ? 20 : 80,
-            bottom: keyboardHeight > 0 ? keyboardDialogGap : 80,
+            left: 16,
+            right: 16,
+            top: keyboardHeight > 0 ? 10 : 40,
+            bottom: keyboardHeight > 0 ? keyboardDialogGap : 40,
           ),
           child: Container(
             width: double.infinity,
-            constraints: const BoxConstraints(maxWidth: 400),
+            constraints: const BoxConstraints(maxWidth: 380),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               color:
@@ -86,9 +86,9 @@ class _TimerListScreenState extends State<TimerListScreen> {
                   // Header
                   Padding(
                     padding: const EdgeInsets.only(
-                      left: 20,
+                      left: 16,
                       right: 8,
-                      top: 16,
+                      top: 12,
                       bottom: 8,
                     ),
                     child: Row(
@@ -96,9 +96,9 @@ class _TimerListScreenState extends State<TimerListScreen> {
                         Icon(
                           Icons.timer,
                           color: Theme.of(context).colorScheme.primary,
-                          size: 24,
+                          size: 20,
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             title,
@@ -126,7 +126,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
 
                   // Content
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -140,7 +140,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         TextField(
                           controller: titleController,
                           decoration: InputDecoration(
@@ -168,13 +168,13 @@ class _TimerListScreenState extends State<TimerListScreen> {
                               ),
                             ),
                             contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
+                              horizontal: 12,
+                              vertical: 10,
                             ),
                           ),
                         ),
 
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
 
                         // 시간 설정
                         Text(
@@ -186,7 +186,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         ValueListenableBuilder<String>(
                           valueListenable: durationDisplayNotifier,
                           builder:
@@ -197,7 +197,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                               ),
                         ),
 
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
 
                         // 색상 선택
                         Text(
@@ -209,12 +209,12 @@ class _TimerListScreenState extends State<TimerListScreen> {
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
                         ValueListenableBuilder<Color>(
                           valueListenable: colorNotifier,
                           builder:
                               (context, selectedColor, _) => Container(
-                                padding: const EdgeInsets.all(16),
+                                padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
                                   color: Theme.of(
                                     context,
@@ -231,8 +231,8 @@ class _TimerListScreenState extends State<TimerListScreen> {
                                     Row(
                                       children: [
                                         Container(
-                                          width: 24,
-                                          height: 24,
+                                          width: 20,
+                                          height: 20,
                                           decoration: BoxDecoration(
                                             color: selectedColor,
                                             shape: BoxShape.circle,
@@ -247,7 +247,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                                             ],
                                           ),
                                         ),
-                                        const SizedBox(width: 12),
+                                        const SizedBox(width: 10),
                                         Text(
                                           '선택된 색상',
                                           style: TextStyle(
@@ -261,7 +261,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 16),
+                                    const SizedBox(height: 12),
                                     GridView.builder(
                                       shrinkWrap: true,
                                       physics:
@@ -269,8 +269,8 @@ class _TimerListScreenState extends State<TimerListScreen> {
                                       gridDelegate:
                                           const SliverGridDelegateWithFixedCrossAxisCount(
                                             crossAxisCount: 5,
-                                            mainAxisSpacing: 12,
-                                            crossAxisSpacing: 12,
+                                            mainAxisSpacing: 8,
+                                            crossAxisSpacing: 8,
                                             childAspectRatio: 1,
                                           ),
                                       itemCount: colors.length,
@@ -294,13 +294,13 @@ class _TimerListScreenState extends State<TimerListScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
 
                   // Action buttons
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 16,
+                      horizontal: 16,
+                      vertical: 12,
                     ),
                     child: Row(
                       children: [
@@ -308,7 +308,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                           child: TextButton(
                             onPressed: () => Navigator.pop(context),
                             style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 side: BorderSide(
@@ -331,7 +331,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: ElevatedButton(
                             onPressed: onConfirm,
@@ -339,7 +339,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                               backgroundColor:
                                   Theme.of(context).colorScheme.primary,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -764,8 +764,8 @@ class _ColorButtonWidget extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
-        width: 45,
-        height: 45,
+        width: 36,
+        height: 36,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: color,
@@ -784,13 +784,13 @@ class _ColorButtonWidget extends StatelessWidget {
               isSelected
                   ? Center(
                     child: Container(
-                      width: 16,
-                      height: 16,
+                      width: 12,
+                      height: 12,
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white,
                       ),
-                      child: Icon(Icons.check, color: color, size: 10),
+                      child: Icon(Icons.check, color: color, size: 8),
                     ),
                   )
                   : null,

@@ -72,9 +72,6 @@ class _TimerRunScreenState extends State<TimerRunScreen>
           SoundHelper.playCompleteFeedback();
           // 예약된 알림 외에도 직접 알림 표시 (백그라운드에서도 작동하도록)
           _showCompletionNotification();
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('타이머 종료!')));
         }
       });
     });
@@ -244,9 +241,6 @@ class _TimerRunScreenState extends State<TimerRunScreen>
             SoundHelper.playCompleteFeedback();
             // 예약된 알림 외에도 직접 알림 표시
             _showCompletionNotification();
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('타이머 종료!')));
           }
         });
       }
