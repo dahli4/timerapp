@@ -46,10 +46,22 @@ flutter_launcher_icons:
   adaptive_icon_background: "#F9F7F4"
   adaptive_icon_foreground: "assets/icon/timer_app_icon.png"
 
+flutter_native_splash:
+  color: "#F5EDDD"
+  image: "assets/splash_icon.png"
+  color_dark: "#1E1E1E"
+  image_dark: "assets/splash_icon.png"
+  android_12:
+    image: "assets/splash_icon.png"
+    color: "#F5EDDD"
+    image_dark: "assets/splash_icon.png"
+    color_dark: "#1E1E1E"
+
 flutter:
   uses-material-design: true
   assets:
     - assets/icon/
+    - assets/splash_icon.png
   fonts:
     - family: IM_Hyemin
       fonts:

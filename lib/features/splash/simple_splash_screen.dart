@@ -1,120 +1,122 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+import '../onboarding/onboarding_screen.dart';
 
 class SimpleSplashScreen extends StatefulWidget {
-  final Widget nextScreen;
-  final Duration duration;
-
-  const SimpleSplashScreen({
-    super.key,
-    required this.nextScreen,
-    this.duration = const Duration(seconds: 2),
-  });
+  const SimpleSplashScreen({super.key});
 
   @override
   State<SimpleSplashScreen> createState() => _SimpleSplashScreenState();
 }
 
-class _SimpleSplashScreenState extends State<SimpleSplashScreen> {
+class _SimpleSplashScreenState extends State<SimpleSplashScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+
   @override
   void initState() {
     super.initState();
-    _navigateToNextScreen();
+
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+
+    _animationController.forward();
+
+    Timer(const Duration(seconds: 3), () {
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder:
+                (context, animation, secondaryAnimation) =>
+                    const OnboardingScreen(),
+            transitionsBuilder: (
+              context,
+              animation,
+              secondaryAnimation,
+              child,
+            ) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            transitionDuration: const Duration(milliseconds: 500),
+          ),
+        );
+      }
+    });
   }
 
-  void _navigateToNextScreen() async {
-    await Future.delayed(widget.duration);
-    if (mounted) {
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder:
-              (context, animation, secondaryAnimation) => widget.nextScreen,
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 300),
-        ),
-      );
-    }
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFF9F7F4), // 베이지 색상
-              Color(0xFFF5F3F0), // 약간 더 어두운 베이지
-            ],
-          ),
-        ),
-        child: Center(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: Center(
+        child: FadeTransition(
+          opacity: _fadeAnimation,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // 타이머 아이콘 이미지
               Container(
-                width: 140,
-                height: 140,
+                width: 120,
+                height: 120,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(25),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 25,
-                      offset: const Offset(0, 12),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
                     ),
                   ],
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(25),
                   child: Image.asset(
-                    'assets/icon/timer_app_icon.png',
-                    width: 140,
-                    height: 140,
+                    'assets/splash_icon.png',
+                    width: 120,
+                    height: 120,
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) {
-                      // 아이콘 파일이 없을 경우 대체 아이콘 표시
-                      return Container(
-                        width: 140,
-                        height: 140,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF5A9FD4),
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: const Icon(
-                          Icons.timer_outlined,
-                          size: 70,
-                          color: Colors.white,
-                        ),
+                      return Icon(
+                        Icons.timer,
+                        size: 60,
+                        color: Theme.of(context).colorScheme.primary,
                       );
                     },
                   ),
                 ),
               ),
-              const SizedBox(height: 40),
-              // 앱 이름
+              const SizedBox(height: 24),
               Text(
-                '집중 타이머',
+                '모딧',
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary,
-                  letterSpacing: 1.5,
+                  color: Theme.of(context).colorScheme.onSurface,
+                  letterSpacing: 1.2,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               Text(
-                '생산성 향상을 위한 스마트 타이머',
+                '시간과 함께 성장하는 중',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 16,
                   color: Theme.of(
                     context,
-                  ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-                  letterSpacing: 0.8,
+                  ).colorScheme.onSurface.withValues(alpha: 0.7),
+                  fontWeight: FontWeight.w400,
                 ),
               ),
             ],
