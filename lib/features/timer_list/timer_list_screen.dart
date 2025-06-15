@@ -505,46 +505,31 @@ class _TimerListScreenState extends State<TimerListScreen> {
                         timer: timer,
                         onEdit: () => _showEditTimerDialog(idx, timer),
                         onDelete: () async {
-                          final confirm = await showDialog<bool>(
+                          final confirmed = await showDialog<bool>(
                             context: context,
                             builder:
                                 (context) => AlertDialog(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  title: const Text(
-                                    '타이머 삭제',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                  title: const Text('타이머 삭제'),
                                   content: Text(
                                     '정말로 "${timer.title}" 타이머를 삭제하시겠습니까?',
                                   ),
                                   actions: [
                                     TextButton(
                                       onPressed:
-                                          () => Navigator.pop(context, false),
+                                          () =>
+                                              Navigator.of(context).pop(false),
                                       child: const Text('취소'),
                                     ),
-                                    ElevatedButton(
+                                    TextButton(
                                       onPressed:
-                                          () => Navigator.pop(context, true),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.red,
-                                        foregroundColor: Colors.white,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                        ),
-                                      ),
+                                          () => Navigator.of(context).pop(true),
                                       child: const Text('삭제'),
                                     ),
                                   ],
                                 ),
                           );
-                          if (confirm == true) {
+
+                          if (confirmed == true) {
                             await _timerBox.deleteAt(idx);
                             setState(() {});
                           }

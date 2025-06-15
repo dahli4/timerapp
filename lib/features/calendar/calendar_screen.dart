@@ -322,8 +322,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         orElse:
                             () => StudyTimerModel(
                               id: '',
-                              title: '알 수 없음',
+                              title: '삭제된 타이머',
                               durationMinutes: 0,
+                              colorHex: 0xFF9E9E9E, // 회색으로 설정
                               createdAt: DateTime.now(),
                             ),
                       );
@@ -445,7 +446,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   children: [
                                     Icon(
                                       Icons.access_time,
-                                      color: color,
+                                      color:
+                                          timer.colorHex != null
+                                              ? Color(timer.colorHex!)
+                                              : Colors.blue.shade600,
                                       size: 16,
                                     ),
                                     const SizedBox(width: 4),
@@ -454,7 +458,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
-                                        color: color,
+                                        color:
+                                            Theme.of(context).brightness ==
+                                                    Brightness.dark
+                                                ? Colors.white
+                                                : Colors.black87,
                                       ),
                                     ),
                                   ],
@@ -476,16 +484,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   // 총 학습 시간을 포맷팅하는 메서드
   String _formatTotalTime(List<StudyRecordModel> records) {
-    final totalMinutes = records.fold<int>(0, (sum, record) => sum + record.minutes);
-    
+    final totalMinutes = records.fold<int>(
+      0,
+      (sum, record) => sum + record.minutes,
+    );
+
     if (totalMinutes == 0) {
       return '0분';
     } else if (totalMinutes < 60) {
-      return '${totalMinutes}분';
+      return '$totalMinutes분';
     } else {
       final hours = totalMinutes ~/ 60;
       final minutes = totalMinutes % 60;
-      return minutes > 0 ? '${hours}시간 ${minutes}분' : '${hours}시간';
+      return minutes > 0 ? '$hours시간 $minutes분' : '$hours시간';
     }
   }
 }

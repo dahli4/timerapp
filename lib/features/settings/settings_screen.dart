@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../data/study_record_model.dart';
+import '../../data/study_timer_model.dart';
 import '../../main.dart'; // themeNotifier를 import
 
 class SettingsScreen extends StatefulWidget {
@@ -61,6 +62,70 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  void _showCleanupDialog(BuildContext context) async {
+    // 삭제된 타이머의 기록 개수 계산
+    final recordBox = Hive.box<StudyRecordModel>('records');
+    final timerBox = Hive.box<StudyTimerModel>('timers');
+
+    final existingTimerIds = timerBox.values.map((t) => t.id).toSet();
+    final orphanedRecords =
+        recordBox.values
+            .where((record) => !existingTimerIds.contains(record.timerId))
+            .toList();
+
+    if (orphanedRecords.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('정리할 기록이 없습니다.')));
+      return;
+    }
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('삭제된 타이머 기록 정리'),
+            content: Text(
+              '삭제된 타이머의 학습 기록 ${orphanedRecords.length}개를 정리하시겠습니까?\n\n'
+              '이 작업은 되돌릴 수 없습니다.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('취소'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('정리하기'),
+              ),
+            ],
+          ),
+    );
+
+    if (confirm == true) {
+      // 삭제된 타이머의 기록들 삭제
+      final keysToDelete = <dynamic>[];
+      for (int i = 0; i < recordBox.length; i++) {
+        final record = recordBox.getAt(i);
+        if (record != null && !existingTimerIds.contains(record.timerId)) {
+          keysToDelete.add(recordBox.keyAt(i));
+        }
+      }
+
+      for (final key in keysToDelete) {
+        await recordBox.delete(key);
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${orphanedRecords.length}개의 기록을 정리했습니다.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,6 +163,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: const Icon(Icons.delete_outline),
                   title: const Text('공부 기록 전체 초기화'),
                   onTap: () => _showResetDialog(context),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.cleaning_services),
+                  title: const Text('삭제된 타이머 기록 정리'),
+                  subtitle: const Text('삭제된 타이머의 학습 기록을 정리합니다'),
+                  onTap: () => _showCleanupDialog(context),
                 ),
                 const Divider(),
               ],

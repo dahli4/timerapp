@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../data/study_record_model.dart';
+import '../../data/study_timer_model.dart';
 import 'package:intl/intl.dart';
 
 class SubjectDetailScreen extends StatefulWidget {
@@ -28,6 +29,11 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 타이머가 삭제되었는지 확인
+    final timerBox = Hive.box<StudyTimerModel>('timers');
+    final isDeleted =
+        !timerBox.values.any((timer) => timer.id == widget.timerId);
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
@@ -35,6 +41,16 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
         backgroundColor: widget.subjectColor,
         foregroundColor: Colors.white,
         elevation: 0,
+        actions:
+            isDeleted
+                ? [
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    tooltip: '이 타이머의 모든 기록 삭제',
+                    onPressed: () => _showDeleteRecordsDialog(context),
+                  ),
+                ]
+                : null,
       ),
       body: ValueListenableBuilder<Box<StudyRecordModel>>(
         valueListenable: Hive.box<StudyRecordModel>('records').listenable(),
@@ -110,6 +126,14 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
     final avgSessionMinutes =
         sessionCount > 0 ? (adjustedMinutes / sessionCount).toDouble() : 0.0;
 
+    // 가장 긴 세션 시간 (분)
+    final longestSessionMinutes =
+        records.isEmpty
+            ? 0
+            : records
+                .map((r) => r.minutes + (r.seconds ~/ 60))
+                .reduce((a, b) => a > b ? a : b);
+
     // 최근 7일 데이터
     final now = DateTime.now();
     final last7Days = List.generate(
@@ -144,6 +168,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
             remainingSeconds,
             sessionCount,
             avgSessionMinutes,
+            longestSessionMinutes,
           ),
 
           const SizedBox(height: 20),
@@ -166,6 +191,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
     int seconds,
     int sessionCount,
     double avgMinutes,
+    int longestMinutes,
   ) {
     return Container(
       width: double.infinity,
@@ -233,9 +259,21 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
               ),
               Expanded(
                 child: _buildStatItem(
-                  '평균 세션',
+                  '평균',
                   '${avgMinutes.toStringAsFixed(0)}분',
                   Icons.timer_outlined,
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 40,
+                color: Colors.white.withValues(alpha: 0.3),
+              ),
+              Expanded(
+                child: _buildStatItem(
+                  '최고기록',
+                  '$longestMinutes분',
+                  Icons.emoji_events_outlined,
                 ),
               ),
             ],
@@ -629,5 +667,61 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
         ],
       ),
     );
+  }
+
+  void _showDeleteRecordsDialog(BuildContext context) async {
+    final recordBox = Hive.box<StudyRecordModel>('records');
+    final recordCount =
+        recordBox.values
+            .where((record) => record.timerId == widget.timerId)
+            .length;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('기록 삭제'),
+            content: Text(
+              '"${widget.subjectName}"의 모든 학습 기록 $recordCount개를 삭제하시겠습니까?\n\n'
+              '이 작업은 되돌릴 수 없습니다.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('취소'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('삭제'),
+              ),
+            ],
+          ),
+    );
+
+    if (confirmed == true) {
+      // 해당 타이머의 모든 기록 삭제
+      final keysToDelete = <dynamic>[];
+      for (int i = 0; i < recordBox.length; i++) {
+        final record = recordBox.getAt(i);
+        if (record?.timerId == widget.timerId) {
+          keysToDelete.add(recordBox.keyAt(i));
+        }
+      }
+
+      for (final key in keysToDelete) {
+        await recordBox.delete(key);
+      }
+
+      // 이전 화면으로 돌아가기
+      Navigator.of(context).pop();
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('$recordCount개의 기록을 삭제했습니다.')));
+    }
   }
 }
