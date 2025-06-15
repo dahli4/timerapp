@@ -30,7 +30,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     ),
     OnboardingPage(
       title: '통계로 확인하는\n나의 성장',
-      description: '일별, 주별 활동 기록을 확인하고\n달력에서 나의 성취를 확인해보세요',
+      description:
+          '일별, 주별 활동 기록을 확인하고\n달력에서 나의 성취를 확인해보세요\n\n💡 1분 이상 사용한 타이머만\n통계에 기록됩니다',
       icon: Icons.analytics_outlined,
       color: const Color(0xFF4682B4), // 스틸블루
     ),

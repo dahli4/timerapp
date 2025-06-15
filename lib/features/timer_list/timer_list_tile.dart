@@ -75,6 +75,8 @@ class TimerListTile extends StatelessWidget {
                     children: [
                       Text(
                         timer.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,

@@ -25,6 +25,7 @@ void main() async {
   Hive.registerAdapter(StudyRecordModelAdapter());
   await Hive.openBox<StudyTimerModel>('timers');
   await Hive.openBox<StudyRecordModel>('records');
+
   await initializeNotifications();
 
   // WorkManager 초기화 (Android만)
@@ -57,6 +58,9 @@ class MyApp extends StatelessWidget {
           ],
           locale: const Locale('ko', 'KR'), // 기본 로케일을 한국어로 설정
           theme: ThemeData.light().copyWith(
+            textTheme: ThemeData.light().textTheme.apply(
+              fontFamily: 'IM_Hyemin',
+            ),
             colorScheme: ThemeData.light().colorScheme.copyWith(
               primary: const Color(0xFF5A9FD4), // 라이트블루
               secondary: const Color(0xFF87CEEB), // 연한 라이트블루
@@ -70,6 +74,12 @@ class MyApp extends StatelessWidget {
               foregroundColor: Color(0xFF2C3E50), // 다크 블루그레이
               elevation: 0,
               centerTitle: true,
+              titleTextStyle: TextStyle(
+                fontFamily: 'IM_Hyemin',
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF2C3E50),
+              ),
             ),
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
@@ -104,6 +114,11 @@ class MyApp extends StatelessWidget {
             ),
           ),
           darkTheme: ThemeData.dark().copyWith(
+            textTheme: ThemeData.dark().textTheme.apply(
+              fontFamily: 'IM_Hyemin',
+              bodyColor: const Color(0xFFF5F3F0), // 연한 베이지
+              displayColor: const Color(0xFFF5F3F0), // 연한 베이지
+            ),
             colorScheme: ThemeData.dark().colorScheme.copyWith(
               primary: const Color(0xFF87CEEB), // 스카이블루 (다크모드용)
               secondary: const Color(0xFF5A9FD4), // 라이트블루
@@ -117,6 +132,12 @@ class MyApp extends StatelessWidget {
               foregroundColor: Color(0xFFF5F3F0), // 연한 베이지 (텍스트)
               elevation: 0,
               centerTitle: true,
+              titleTextStyle: TextStyle(
+                fontFamily: 'IM_Hyemin',
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFFF5F3F0),
+              ),
             ),
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
@@ -138,10 +159,6 @@ class MyApp extends StatelessWidget {
             dialogTheme: const DialogTheme(
               backgroundColor: Color(0xFF3E3B36), // 다크 베이지
               surfaceTintColor: Colors.transparent,
-            ),
-            textTheme: ThemeData.dark().textTheme.apply(
-              bodyColor: const Color(0xFFF5F3F0), // 연한 베이지
-              displayColor: const Color(0xFFF5F3F0), // 연한 베이지
             ),
             switchTheme: SwitchThemeData(
               thumbColor: WidgetStateProperty.resolveWith((states) {

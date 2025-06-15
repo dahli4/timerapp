@@ -50,3 +50,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icon/
+  fonts:
+    - family: IM_Hyemin
+      fonts:
+        - asset: assets/IM_Hyemin-Regular.otf
