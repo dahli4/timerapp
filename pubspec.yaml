@@ -41,30 +41,15 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/splash_icon.png"
+  image_path: "assets/icon/timer_app_icon.png"
   min_sdk_android: 21
-  adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/splash_icon.png"
-  remove_alpha_ios: true
-
-flutter_native_splash:
-  color: "#FFFFFF"  # 하얀 배경
-  image: "assets/splash_icon.png"  # 시계 캐릭터 이미지만
-  color_dark: "#FFFFFF"  # 다크모드도 하얀 배경
-  image_dark: "assets/splash_icon.png"
-  android: false  # 안드로이드 스플래시 비활성화
-  ios: true  # iOS만 활성화
-  android_12:
-    image: "assets/splash_icon.png"
-    color: "#FFFFFF"
-    image_dark: "assets/splash_icon.png"
-    color_dark: "#FFFFFF"
+  adaptive_icon_background: "#F9F7F4"
+  adaptive_icon_foreground: "assets/icon/timer_app_icon.png"
 
 flutter:
   uses-material-design: true
   assets:
     - assets/icon/
-    - assets/splash_icon.png
   fonts:
     - family: IM_Hyemin
       fonts:
