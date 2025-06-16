@@ -8,6 +8,7 @@ import '../../utils/notification_helper.dart';
 import '../../utils/background_notification_helper.dart';
 import '../../utils/sound_helper.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TimerRunScreen extends StatefulWidget {
@@ -27,7 +28,6 @@ class _TimerRunScreenState extends State<TimerRunScreen>
 
   Ticker? _ticker;
   double _elapsedSeconds = 0;
-  bool _recordSaved = false; // 1분 이상 기록 저장 여부
   bool _isRunning = false;
   DateTime? _startTime;
   DateTime? _pausedTime; // 정지한 시간 저장
@@ -45,29 +45,26 @@ class _TimerRunScreenState extends State<TimerRunScreen>
     _ticker = createTicker((_) {
       if (!_isRunning) return;
       final now = DateTime.now();
-      setState(() {
-        _elapsedSeconds = now.difference(_startTime!).inMilliseconds / 1000.0;
+      final calculatedElapsed =
+          now.difference(_startTime!).inMilliseconds / 1000.0;
 
-        if (_elapsedSeconds >= 60 && !_recordSaved) {
-          _saveRecord();
-          _recordSaved = true;
-        }
+      setState(() {
+        // 타이머 완료 시간을 초과하지 않도록 제한
+        _elapsedSeconds = calculatedElapsed.clamp(
+          0.0,
+          _totalSeconds.toDouble(),
+        );
 
         if (_elapsedSeconds >= _totalSeconds) {
           _elapsedSeconds = _totalSeconds.toDouble();
           _isRunning = false;
           _ticker?.stop();
-          if (!_recordSaved) {
-            _saveRecord();
-            _recordSaved = true;
-          }
+          // 타이머 완료 시 항상 최종 기록 저장
+          _saveRecord();
           // 타이머 완료 햅틱 피드백
           SoundHelper.playCompleteFeedback();
           // 예약된 알림 외에도 직접 알림 표시 (백그라운드에서도 작동하도록)
           _showCompletionNotification();
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('타이머 종료!')));
         }
       });
     });
@@ -95,7 +92,12 @@ class _TimerRunScreenState extends State<TimerRunScreen>
     scheduleTimerNotification(secondsLeft);
 
     // 백그라운드 알림도 함께 예약 (추가 보장)
-    scheduleBackgroundTimerNotification(_title, secondsLeft);
+    scheduleBackgroundTimerNotification(
+      _title,
+      _timer.id,
+      _durationMinutes,
+      secondsLeft,
+    );
   }
 
   void _pause() {
@@ -109,9 +111,10 @@ class _TimerRunScreenState extends State<TimerRunScreen>
     _ticker?.stop();
     cancelTimerNotification();
     cancelBackgroundTimerNotification(); // 백그라운드 알림도 취소
-    if (_elapsedSeconds >= 60 && !_recordSaved) {
+
+    // 1분 이상 사용한 경우에만 기록 저장
+    if (_elapsedSeconds >= 60) {
       _saveRecord();
-      _recordSaved = true;
     }
   }
 
@@ -121,7 +124,6 @@ class _TimerRunScreenState extends State<TimerRunScreen>
       _isRunning = false;
       _startTime = null;
       _pausedTime = null; // 정지 시간도 초기화
-      _recordSaved = false;
     });
     _ticker?.stop();
     cancelTimerNotification();
@@ -130,14 +132,26 @@ class _TimerRunScreenState extends State<TimerRunScreen>
 
   void _saveRecord() async {
     final recordBox = Hive.box<StudyRecordModel>('records');
+
+    // 실제 경과 시간을 정확히 계산
+    int minutesToSave = _elapsedSeconds ~/ 60;
+    int secondsToSave = (_elapsedSeconds % 60).toInt();
+
+    // 1분 미만이면 저장하지 않음
+    if (minutesToSave == 0 && secondsToSave < 60) {
+      return;
+    }
+
     await recordBox.add(
       StudyRecordModel(
         timerId: widget.timer.id,
         date: DateTime.now(),
-        minutes: _elapsedSeconds ~/ 60,
-        seconds: (_elapsedSeconds % 60).toInt(),
+        minutes: minutesToSave,
+        seconds: secondsToSave,
       ),
     );
+
+    print('기록 저장: $minutesToSave분 $secondsToSave초');
   }
 
   // 타이머 완료 시 알림 즉시 표시 (백그라운드에서도 작동하도록)
@@ -193,8 +207,28 @@ class _TimerRunScreenState extends State<TimerRunScreen>
     if (state == AppLifecycleState.resumed && _isRunning) {
       if (_startTime != null) {
         final now = DateTime.now();
+        final calculatedElapsed =
+            now.difference(_startTime!).inMilliseconds / 1000.0;
+
         setState(() {
-          _elapsedSeconds = now.difference(_startTime!).inMilliseconds / 1000.0;
+          // 타이머 완료 시간을 초과하지 않도록 제한
+          _elapsedSeconds = calculatedElapsed.clamp(
+            0.0,
+            _totalSeconds.toDouble(),
+          );
+
+          // 타이머가 완료되었으면 완료 처리
+          if (_elapsedSeconds >= _totalSeconds) {
+            _elapsedSeconds = _totalSeconds.toDouble();
+            _isRunning = false;
+            _ticker?.stop();
+            // 타이머 완료 시 항상 최종 기록 저장
+            _saveRecord();
+            // 타이머 완료 햅틱 피드백
+            SoundHelper.playCompleteFeedback();
+            // 예약된 알림 외에도 직접 알림 표시
+            _showCompletionNotification();
+          }
         });
       }
     }
@@ -251,9 +285,9 @@ class _TimerRunScreenState extends State<TimerRunScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -297,73 +331,96 @@ class _TimerRunScreenState extends State<TimerRunScreen>
 
     return Scaffold(
       appBar: AppBar(title: Text(_title), elevation: 0, centerTitle: true),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                CustomPaint(
-                  size: const Size(300, 300),
-                  painter: TimerCirclePainter(
-                    progress: progress,
-                    bgColor: timerBgColor, // 배경색 전달
-                    progressColor: timerColor, // 타이머 색상 전달
-                  ),
-                ),
-                Text(
-                  '$minutes:$seconds',
-                  style: TextStyle(
-                    fontSize: 48,
-                    color: timerTextColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+      body: Column(
+        children: [
+          // 통계 기록 안내 (배경 제거, 텍스트만)
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              '💡 1분 이상 사용시 통계에 기록됩니다',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: isDark ? Colors.white60 : Colors.black54,
+                fontStyle: FontStyle.italic,
+              ),
             ),
-            // 정지한 시간 표시 (공간은 항상 유지, 텍스트만 조건부)
-            Container(
-              height: 60,
-              alignment: Alignment.center,
-              child:
-                  _pausedTime != null
-                      ? Padding(
-                        padding: const EdgeInsets.only(top: 16.0, bottom: 12.0),
-                        child: Text(
-                          '정지한 시각: '
-                          '${_pausedTime!.hour.toString().padLeft(2, '0')}:'
-                          '${_pausedTime!.minute.toString().padLeft(2, '0')}',
-                          style: TextStyle(
-                            fontSize: 20,
-                            color: isDark ? Colors.white70 : Colors.black54,
-                          ),
+          ),
+
+          // 나머지 컨텐츠
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      CustomPaint(
+                        size: const Size(300, 300),
+                        painter: TimerCirclePainter(
+                          progress: progress,
+                          bgColor: timerBgColor, // 배경색 전달
+                          progressColor: timerColor, // 타이머 색상 전달
                         ),
-                      )
-                      : const SizedBox.shrink(), // 공간은 유지하되 텍스트만 숨김
+                      ),
+                      Text(
+                        '$minutes:$seconds',
+                        style: TextStyle(
+                          fontSize: 48,
+                          color: timerTextColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  // 정지한 시간 표시 (공간은 항상 유지, 텍스트만 조건부)
+                  Container(
+                    height: 60,
+                    alignment: Alignment.center,
+                    child:
+                        _pausedTime != null
+                            ? Padding(
+                              padding: const EdgeInsets.only(
+                                top: 16.0,
+                                bottom: 12.0,
+                              ),
+                              child: Text(
+                                '정지한 시각: ${DateFormat('a h시 mm분', 'ko_KR').format(_pausedTime!)}',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color:
+                                      isDark ? Colors.white70 : Colors.black54,
+                                ),
+                              ),
+                            )
+                            : const SizedBox.shrink(), // 공간은 유지하되 텍스트만 숨김
+                  ),
+                  const SizedBox(height: 24), // 고정 간격
+                  // 동기부여 메시지 추가
+                  _buildMotivationalMessage(progress, _elapsedSeconds, isDark),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: Icon(_isRunning ? Icons.pause : Icons.play_arrow),
+                        iconSize: 48,
+                        onPressed: _isRunning ? _pause : _start,
+                      ),
+                      const SizedBox(width: 24),
+                      IconButton(
+                        icon: const Icon(Icons.refresh),
+                        iconSize: 48,
+                        onPressed: _reset,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 24), // 고정 간격
-            // 동기부여 메시지 추가
-            _buildMotivationalMessage(progress, _elapsedSeconds, isDark),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: Icon(_isRunning ? Icons.pause : Icons.play_arrow),
-                  iconSize: 48,
-                  onPressed: _isRunning ? _pause : _start,
-                ),
-                const SizedBox(width: 24),
-                IconButton(
-                  icon: const Icon(Icons.refresh),
-                  iconSize: 48,
-                  onPressed: _reset,
-                ),
-              ],
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -1,16 +1,21 @@
-# timerapp
+# 모딧 - 순간의 집중
 
-A new Flutter project.
+생산성 향상을 위한 스마트 타이머 애플리케이션
 
-## Getting Started
+## 📱 앱 소개
+모딧은 집중력 향상과 목표 달성을 위한 직관적인 타이머 앱입니다.
+공부, 업무, 독서, 운동 등 다양한 활동에서 당신의 집중을 도와드립니다.
 
-This project is a starting point for a Flutter application.
+## ⚡ 주요 기능
+- 🎯 맞춤형 타이머 설정
+- 📊 상세한 통계 및 분석
+- 🔔 스마트 알림 시스템
+- 📈 목표 달성률 추적
+- 🌙 다크모드 지원
 
-A few resources to get you started if this is your first Flutter project:
+## 🚀 개발 환경
+- Flutter 3.7.2+
+- Dart 3.0+
+- iOS 13.0+
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+© 2025 동영. All rights reserved.

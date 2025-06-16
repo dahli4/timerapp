@@ -36,10 +36,19 @@ class _MainTabControllerState extends State<MainTabController> {
           color: Theme.of(context).scaffoldBackgroundColor,
           border: Border(
             top: BorderSide(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.1),
               width: 1,
             ),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, -2),
+            ),
+          ],
         ),
         child: BottomNavigationBar(
           currentIndex: _selectedIndex,
@@ -47,21 +56,57 @@ class _MainTabControllerState extends State<MainTabController> {
           selectedItemColor: Theme.of(context).colorScheme.primary,
           unselectedItemColor: Theme.of(
             context,
-          ).colorScheme.onSurface.withOpacity(0.6),
+          ).colorScheme.onSurface.withValues(alpha: 0.6),
+          selectedFontSize: 12,
+          unselectedFontSize: 11,
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.transparent,
           elevation: 0,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.timer), label: '타이머'),
-            BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: '통계'),
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w400),
+          items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_month),
+              icon: _buildTabIcon(Icons.timer_outlined, Icons.timer, 0),
+              label: '타이머',
+            ),
+            BottomNavigationBarItem(
+              icon: _buildTabIcon(Icons.bar_chart_outlined, Icons.bar_chart, 1),
+              label: '통계',
+            ),
+            BottomNavigationBarItem(
+              icon: _buildTabIcon(
+                Icons.calendar_month_outlined,
+                Icons.calendar_month,
+                2,
+              ),
               label: '캘린더',
             ),
-            BottomNavigationBarItem(icon: Icon(Icons.settings), label: '설정'),
+            BottomNavigationBarItem(
+              icon: _buildTabIcon(Icons.settings_outlined, Icons.settings, 3),
+              label: '설정',
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTabIcon(
+    IconData unselectedIcon,
+    IconData selectedIcon,
+    int index,
+  ) {
+    final isSelected = _selectedIndex == index;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color:
+            isSelected
+                ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
+                : Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Icon(isSelected ? selectedIcon : unselectedIcon, size: 24),
     );
   }
 }

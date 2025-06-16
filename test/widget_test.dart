@@ -1,30 +1,28 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:timerapp/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  group('Timer App Tests', () {
+    testWidgets('App loads without crashing', (WidgetTester tester) async {
+      // 앱이 정상적으로 로드되는지 테스트
+      await tester.pumpWidget(const MyApp());
+      await tester.pump();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+      // MaterialApp이 로드되는지 확인
+      expect(find.byType(MaterialApp), findsOneWidget);
+    });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    testWidgets('App has proper theme configuration', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(const MyApp());
+      await tester.pump();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+      // MaterialApp의 테마가 설정되어 있는지 확인
+      final MaterialApp app = tester.widget(find.byType(MaterialApp));
+      expect(app.theme, isNotNull);
+      expect(app.darkTheme, isNotNull);
+    });
   });
 }

@@ -37,6 +37,24 @@ class _StatsScreenState extends State<StatsScreen> {
     todayMinutes += todaySeconds ~/ 60;
     todaySeconds = todaySeconds % 60;
 
+    // 연속 학습일 계산
+    int currentStreak = _calculateCurrentStreak(records);
+
+    // 이번 달 공부 시간
+    final thisMonthRecords = records.where(
+      (r) => r.date.year == now.year && r.date.month == now.month,
+    );
+    int thisMonthMinutes = thisMonthRecords.fold(
+      0,
+      (sum, r) => sum + r.minutes,
+    );
+    int thisMonthSeconds = thisMonthRecords.fold(
+      0,
+      (sum, r) => sum + r.seconds,
+    );
+    thisMonthMinutes += thisMonthSeconds ~/ 60;
+    thisMonthSeconds = thisMonthSeconds % 60;
+
     // 과목별 누적 시간
     final Map<String, int> subjectMinutes = {};
     final Map<String, int> subjectSeconds = {};
@@ -97,8 +115,9 @@ class _StatsScreenState extends State<StatsScreen> {
         orElse:
             () => StudyTimerModel(
               id: '',
-              title: '알 수 없음',
+              title: '삭제된 타이머',
               durationMinutes: 0,
+              colorHex: 0xFF9E9E9E, // 회색으로 설정
               createdAt: DateTime.now(),
             ),
       );
@@ -113,23 +132,64 @@ class _StatsScreenState extends State<StatsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 총 공부 시간 카드
-            _buildStatCard(
-              icon: Icons.timer_outlined,
-              title: '총 공부 시간',
-              value: '${totalMinutes ~/ 60}시간 ${totalMinutes % 60}분',
-              subtitle: '$totalSeconds초',
-              color: Colors.blue.shade600,
+            // 첫 번째 줄: 총 학습시간 + 오늘 학습시간
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    icon: Icons.timer,
+                    title: '총 학습시간',
+                    value:
+                        totalMinutes >= 60
+                            ? '${totalMinutes ~/ 60}시간 ${totalMinutes % 60}분'
+                            : '$totalMinutes분',
+                    subtitle: '${records.length}개 세션',
+                    color: Colors.blue,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatCard(
+                    icon: Icons.today,
+                    title: '오늘 학습',
+                    value:
+                        todayMinutes >= 60
+                            ? '${todayMinutes ~/ 60}시간 ${todayMinutes % 60}분'
+                            : '$todayMinutes분',
+                    subtitle: todayMinutes > 0 ? '계속 화이팅!' : '시작해볼까요?',
+                    color: Colors.green,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
 
-            // 오늘 공부 시간 카드
-            _buildStatCard(
-              icon: Icons.today_outlined,
-              title: '오늘 공부',
-              value: '${todayMinutes ~/ 60}시간 ${todayMinutes % 60}분',
-              subtitle: '$todaySeconds초',
-              color: Colors.green.shade600,
+            // 두 번째 줄: 연속 학습일 + 이번 달 학습
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    icon: Icons.local_fire_department,
+                    title: '연속 학습일',
+                    value: '$currentStreak일',
+                    subtitle: currentStreak > 0 ? '꾸준히 공부 중!' : '오늘부터 시작!',
+                    color: Colors.orange,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatCard(
+                    icon: Icons.calendar_month,
+                    title: '이번 달',
+                    value:
+                        thisMonthMinutes >= 60
+                            ? '${thisMonthMinutes ~/ 60}시간 ${thisMonthMinutes % 60}분'
+                            : '$thisMonthMinutes분',
+                    subtitle: '${now.month}월 학습량',
+                    color: Colors.purple,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 20),
 
@@ -148,81 +208,6 @@ class _StatsScreenState extends State<StatsScreen> {
 
             // 최고 기록 카드
             _buildBestDayCard(bestDay, bestMinutes, bestSeconds),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatCard({
-    required IconData icon,
-    required String title,
-    required String value,
-    required String subtitle,
-    required Color color,
-  }) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color:
-          Theme.of(context).brightness == Brightness.light
-              ? Colors.white
-              : null,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: [color.withOpacity(0.03), color.withOpacity(0.08)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 28),
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withOpacity(0.7),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    value,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: color,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),
@@ -248,8 +233,8 @@ class _StatsScreenState extends State<StatsScreen> {
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             colors: [
-              Theme.of(context).colorScheme.primary.withOpacity(0.03),
-              Theme.of(context).colorScheme.primary.withOpacity(0.08),
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.03),
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -265,7 +250,7 @@ class _StatsScreenState extends State<StatsScreen> {
                   decoration: BoxDecoration(
                     color: Theme.of(
                       context,
-                    ).colorScheme.primary.withOpacity(0.15),
+                    ).colorScheme.primary.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -297,7 +282,7 @@ class _StatsScreenState extends State<StatsScreen> {
                         size: 48,
                         color: Theme.of(
                           context,
-                        ).colorScheme.onSurface.withOpacity(0.3),
+                        ).colorScheme.onSurface.withValues(alpha: 0.3),
                       ),
                       const SizedBox(height: 12),
                       Text(
@@ -305,7 +290,7 @@ class _StatsScreenState extends State<StatsScreen> {
                         style: TextStyle(
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withOpacity(0.5),
+                          ).colorScheme.onSurface.withValues(alpha: 0.5),
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                         ),
@@ -325,8 +310,9 @@ class _StatsScreenState extends State<StatsScreen> {
                   orElse:
                       () => StudyTimerModel(
                         id: '',
-                        title: '알 수 없음',
+                        title: '삭제된 타이머',
                         durationMinutes: 0,
+                        colorHex: 0xFF9E9E9E, // 회색으로 설정
                         createdAt: DateTime.now(),
                       ),
                 );
@@ -361,7 +347,7 @@ class _StatsScreenState extends State<StatsScreen> {
                         BoxShadow(
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withOpacity(0.08),
+                          ).colorScheme.onSurface.withValues(alpha: 0.08),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -369,7 +355,7 @@ class _StatsScreenState extends State<StatsScreen> {
                       border: Border.all(
                         color: Theme.of(
                           context,
-                        ).colorScheme.onSurface.withOpacity(0.08),
+                        ).colorScheme.onSurface.withValues(alpha: 0.08),
                         width: 1,
                       ),
                     ),
@@ -385,7 +371,7 @@ class _StatsScreenState extends State<StatsScreen> {
                               gradient: LinearGradient(
                                 colors: [
                                   subjectColor,
-                                  subjectColor.withOpacity(0.7),
+                                  subjectColor.withValues(alpha: 0.7),
                                 ],
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
@@ -397,6 +383,8 @@ class _StatsScreenState extends State<StatsScreen> {
                           Expanded(
                             child: Text(
                               getSubject(e.key),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -404,21 +392,24 @@ class _StatsScreenState extends State<StatsScreen> {
                               ),
                             ),
                           ),
+                          const SizedBox(width: 12), // 여백 추가
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
+                              horizontal: 10,
+                              vertical: 5,
                             ),
                             decoration: BoxDecoration(
                               color: Theme.of(
                                 context,
-                              ).colorScheme.primary.withOpacity(0.1),
+                              ).colorScheme.primary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                              '${minutes ~/ 60}시간 ${minutes % 60}분 ${seconds % 60}초',
+                              minutes >= 60
+                                  ? '${minutes ~/ 60}시간 ${minutes % 60}분'
+                                  : '$minutes분 ${seconds % 60}초',
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: 12, // 크기 줄임
                                 fontWeight: FontWeight.bold,
                                 color: Theme.of(context).colorScheme.primary,
                               ),
@@ -430,7 +421,7 @@ class _StatsScreenState extends State<StatsScreen> {
                             size: 16,
                             color: Theme.of(
                               context,
-                            ).colorScheme.onSurface.withOpacity(0.4),
+                            ).colorScheme.onSurface.withValues(alpha: 0.4),
                           ),
                         ],
                       ),
@@ -467,8 +458,8 @@ class _StatsScreenState extends State<StatsScreen> {
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             colors: [
-              Colors.teal.withOpacity(0.03),
-              Colors.teal.withOpacity(0.08),
+              Colors.teal.withValues(alpha: 0.03),
+              Colors.teal.withValues(alpha: 0.08),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -482,7 +473,7 @@ class _StatsScreenState extends State<StatsScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.teal.withOpacity(0.15),
+                    color: Colors.teal.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -545,7 +536,7 @@ class _StatsScreenState extends State<StatsScreen> {
                               fontSize: 11,
                               color: Theme.of(
                                 context,
-                              ).colorScheme.onSurface.withOpacity(0.7),
+                              ).colorScheme.onSurface.withValues(alpha: 0.7),
                             ),
                           ),
                           Text(
@@ -556,9 +547,8 @@ class _StatsScreenState extends State<StatsScreen> {
                               color:
                                   minutes > 0
                                       ? Colors.teal.shade600
-                                      : Theme.of(
-                                        context,
-                                      ).colorScheme.onSurface.withOpacity(0.5),
+                                      : Theme.of(context).colorScheme.onSurface
+                                          .withValues(alpha: 0.5),
                             ),
                           ),
                         ],
@@ -588,8 +578,8 @@ class _StatsScreenState extends State<StatsScreen> {
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             colors: [
-              Colors.amber.withOpacity(0.03),
-              Colors.amber.withOpacity(0.08),
+              Colors.amber.withValues(alpha: 0.03),
+              Colors.amber.withValues(alpha: 0.08),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -600,7 +590,7 @@ class _StatsScreenState extends State<StatsScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.amber.withOpacity(0.15),
+                color: Colors.amber.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -620,7 +610,7 @@ class _StatsScreenState extends State<StatsScreen> {
                       fontSize: 14,
                       color: Theme.of(
                         context,
-                      ).colorScheme.onSurface.withOpacity(0.7),
+                      ).colorScheme.onSurface.withValues(alpha: 0.7),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -647,6 +637,120 @@ class _StatsScreenState extends State<StatsScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // 연속 학습일 계산
+  int _calculateCurrentStreak(List<StudyRecordModel> records) {
+    if (records.isEmpty) return 0;
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // 날짜별로 학습 기록이 있는지 확인
+    final studyDates = <DateTime>{};
+    for (final record in records) {
+      final recordDate = DateTime(
+        record.date.year,
+        record.date.month,
+        record.date.day,
+      );
+      studyDates.add(recordDate);
+    }
+
+    int streak = 0;
+    DateTime checkDate = today;
+
+    // 오늘부터 역순으로 확인
+    while (studyDates.contains(checkDate)) {
+      streak++;
+      checkDate = checkDate.subtract(const Duration(days: 1));
+    }
+
+    return streak;
+  }
+
+  // 개별 통계 카드
+  Widget _buildStatCard({
+    required IconData icon,
+    required String title,
+    required String value,
+    required String subtitle,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            color.withValues(alpha: 0.02),
+            color.withValues(alpha: 0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.1), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color:
+                        Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+          ),
+        ],
       ),
     );
   }
