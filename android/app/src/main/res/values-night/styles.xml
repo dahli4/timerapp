@@ -1,4 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?x    <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <!-- Splash screen removed -->
+        <item name="android:forceDarkAllowed">true</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">false</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>n="1.0" encoding="utf-8"?>
 <resources>
     <!-- Theme applied to the Android Window while the process is starting when the OS's Dark Mode setting is on -->
     <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">

@@ -1,5 +1,5 @@
 name: timerapp
-description: "모딧 - 생산성 향상을 위한 스마트 타이머 앱"
+description: "모딧 - 순간의 집중: 생산성 향상을 위한 스마트 타이머 앱"
 
 publish_to: 'none' 
 
@@ -45,6 +45,14 @@ flutter_launcher_icons:
   min_sdk_android: 21
   adaptive_icon_background: "#F9F7F4"
   adaptive_icon_foreground: "assets/icon/timer_app_icon.png"
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: "assets/splash_icon.png"
+  color_dark: "#FFFFFF"
+  image_dark: "assets/splash_icon.png"
+  android: false  # 안드로이드는 비활성화
+  ios: true       # iOS만 활성화
 
 flutter:
   uses-material-design: true
