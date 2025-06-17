@@ -41,7 +41,13 @@ Future<void> _showTimerCompletedNotification(
 
   // SharedPreferences에서 설정 읽기 (백그라운드에서는 직접 접근)
   final prefs = await SharedPreferences.getInstance();
+  final useAlarm = prefs.getBool('alarm') ?? true;
   final useVibration = prefs.getBool('vibration') ?? false;
+
+  // 알림이 비활성화되어 있으면 알림 표시하지 않음
+  if (!useAlarm) {
+    return; // 알림 설정이 꺼져있으면 종료
+  }
 
   final timerTitle = inputData?['timerTitle'] ?? '타이머';
   final timerId = inputData?['timerId'] ?? '';

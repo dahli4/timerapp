@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:timerapp/utils/notification_helper.dart';
 import 'utils/background_notification_helper.dart';
 import 'utils/background_sync_helper.dart';
+import 'utils/dummy_data_helper.dart';
 import 'app/main_tab_controller.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -25,6 +26,9 @@ void main() async {
   Hive.registerAdapter(StudyRecordModelAdapter());
   await Hive.openBox<StudyTimerModel>('timers');
   await Hive.openBox<StudyRecordModel>('records');
+
+  // 🎬 아이패드 스크린샷용 더미 데이터 생성
+  // await DummyDataHelper.generateDummyData();
 
   await initializeNotifications();
 

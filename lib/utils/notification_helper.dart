@@ -46,6 +46,9 @@ Future<void> initializeNotifications() async {
     requestSoundPermission: true,
     requestBadgePermission: true,
     requestAlertPermission: true,
+    defaultPresentAlert: true, // 포그라운드에서도 알림 표시
+    defaultPresentSound: true, // 포그라운드에서도 소리 재생
+    defaultPresentBadge: true, // 포그라운드에서도 배지 표시
   );
 
   const InitializationSettings initSettings = InitializationSettings(
@@ -104,6 +107,7 @@ Future<void> scheduleTimerNotification(int seconds) async {
         priority: Priority.max, // max로 변경
         enableVibration: useVibration,
         playSound: true,
+        sound: const RawResourceAndroidNotificationSound('notification'),
         category: AndroidNotificationCategory.alarm,
         fullScreenIntent: true, // 화면이 꺼져 있어도 표시
         autoCancel: false, // 자동으로 사라지지 않음
@@ -130,6 +134,7 @@ Future<void> scheduleTimerNotification(int seconds) async {
 
 Future<void> cancelTimerNotification() async {
   await flutterLocalNotificationsPlugin.cancel(0);
+  debugPrint('타이머 알림 취소됨');
 }
 
 // 알림 권한 확인
