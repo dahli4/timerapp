@@ -3,12 +3,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:timerapp/utils/notification_helper.dart';
 import 'utils/background_notification_helper.dart';
 import 'utils/background_sync_helper.dart';
-import 'utils/dummy_data_helper.dart';
 import 'app/main_tab_controller.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'data/study_timer_model.dart';
 import 'data/study_record_model.dart';
+import 'data/daily_goal_model.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
@@ -24,8 +24,10 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(StudyTimerModelAdapter());
   Hive.registerAdapter(StudyRecordModelAdapter());
+  Hive.registerAdapter(DailyGoalModelAdapter());
   await Hive.openBox<StudyTimerModel>('timers');
   await Hive.openBox<StudyRecordModel>('records');
+  await Hive.openBox<DailyGoalModel>('daily_goals');
 
   // 🎬 아이패드 스크린샷용 더미 데이터 생성
   // await DummyDataHelper.generateDummyData();

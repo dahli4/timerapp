@@ -129,61 +129,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('설정')),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              children: [
-                // 알림 설정
-                ListTile(
-                  leading: const Icon(Icons.notifications),
-                  title: const Text('타이머 완료 알림'),
-                  subtitle: const Text('타이머가 끝났을 때 알림 표시'),
-                  trailing: Switch(value: _alarm, onChanged: _setAlarm),
-                ),
-
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.dark_mode),
-                  title: const Text('다크모드'),
-                  trailing: ValueListenableBuilder<ThemeMode>(
-                    valueListenable: themeNotifier,
-                    builder:
-                        (context, mode, _) => Switch(
-                          value: mode == ThemeMode.dark,
-                          onChanged: (val) {
-                            themeNotifier.value =
-                                val ? ThemeMode.dark : ThemeMode.light;
-                          },
-                        ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                children: [
+                  // 알림 설정
+                  ListTile(
+                    leading: const Icon(Icons.notifications),
+                    title: const Text('타이머 완료 알림'),
+                    subtitle: const Text('타이머가 끝났을 때 알림 표시'),
+                    trailing: Switch(value: _alarm, onChanged: _setAlarm),
                   ),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.delete_outline),
-                  title: const Text('공부 기록 전체 초기화'),
-                  onTap: () => _showResetDialog(context),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.cleaning_services),
-                  title: const Text('삭제된 타이머 기록 정리'),
-                  subtitle: const Text('삭제된 타이머의 학습 기록을 정리합니다'),
-                  onTap: () => _showCleanupDialog(context),
-                ),
-                const Divider(),
-              ],
+
+                  const Divider(),
+                  ListTile(
+                    leading: const Icon(Icons.dark_mode),
+                    title: const Text('다크모드'),
+                    trailing: ValueListenableBuilder<ThemeMode>(
+                      valueListenable: themeNotifier,
+                      builder:
+                          (context, mode, _) => Switch(
+                            value: mode == ThemeMode.dark,
+                            onChanged: (val) {
+                              themeNotifier.value =
+                                  val ? ThemeMode.dark : ThemeMode.light;
+                            },
+                          ),
+                    ),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.delete_outline),
+                    title: const Text('공부 기록 전체 초기화'),
+                    onTap: () => _showResetDialog(context),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.cleaning_services),
+                    title: const Text('삭제된 타이머 기록 정리'),
+                    subtitle: const Text('삭제된 타이머의 학습 기록을 정리합니다'),
+                    onTap: () => _showCleanupDialog(context),
+                  ),
+                  const Divider(),
+                ],
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 24.0),
-            child: ListTile(
-              leading: const Icon(Icons.info_outline),
-              title: const Text('앱 버전'),
-              subtitle: const Text('v1.0.0'),
-              enabled: false,
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24.0),
+              child: ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: const Text('앱 버전'),
+                subtitle: const Text('v1.0.0'),
+                enabled: false,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -125,90 +125,91 @@ class _StatsScreenState extends State<StatsScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('학습 통계')),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 첫 번째 줄: 총 학습시간 + 오늘 학습시간
-            Row(
-              children: [
-                Expanded(
-                  child: _buildStatCard(
-                    icon: Icons.timer,
-                    title: '총 학습시간',
-                    value:
-                        totalMinutes >= 60
-                            ? '${totalMinutes ~/ 60}시간 ${totalMinutes % 60}분'
-                            : '$totalMinutes분',
-                    subtitle: '${records.length}개 세션',
-                    color: Colors.blue,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 첫 번째 줄: 총 학습시간 + 오늘 학습시간
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStatCard(
+                      icon: Icons.timer,
+                      title: '총 학습시간',
+                      value:
+                          totalMinutes >= 60
+                              ? '${totalMinutes ~/ 60}시간 ${totalMinutes % 60}분'
+                              : '$totalMinutes분',
+                      subtitle: '${records.length}개 세션',
+                      color: Colors.blue,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildStatCard(
-                    icon: Icons.today,
-                    title: '오늘 학습',
-                    value:
-                        todayMinutes >= 60
-                            ? '${todayMinutes ~/ 60}시간 ${todayMinutes % 60}분'
-                            : '$todayMinutes분',
-                    subtitle: todayMinutes > 0 ? '계속 화이팅!' : '시작해볼까요?',
-                    color: Colors.green,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildStatCard(
+                      icon: Icons.today,
+                      title: '오늘 학습',
+                      value:
+                          todayMinutes >= 60
+                              ? '${todayMinutes ~/ 60}시간 ${todayMinutes % 60}분'
+                              : '$todayMinutes분',
+                      subtitle: todayMinutes > 0 ? '계속 화이팅!' : '시작해볼까요?',
+                      color: Colors.green,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
+                ],
+              ),
+              const SizedBox(height: 12),
 
-            // 두 번째 줄: 연속 학습일 + 이번 달 학습
-            Row(
-              children: [
-                Expanded(
-                  child: _buildStatCard(
-                    icon: Icons.local_fire_department,
-                    title: '연속 학습일',
-                    value: '$currentStreak일',
-                    subtitle: currentStreak > 0 ? '꾸준히 공부 중!' : '오늘부터 시작!',
-                    color: Colors.orange,
+              // 두 번째 줄: 연속 학습일 + 이번 달 학습
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStatCard(
+                      icon: Icons.local_fire_department,
+                      title: '연속 학습일',
+                      value: '$currentStreak일',
+                      subtitle: currentStreak > 0 ? '꾸준히 공부 중!' : '오늘부터 시작!',
+                      color: Colors.orange,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildStatCard(
-                    icon: Icons.calendar_month,
-                    title: '이번 달',
-                    value:
-                        thisMonthMinutes >= 60
-                            ? '${thisMonthMinutes ~/ 60}시간 ${thisMonthMinutes % 60}분'
-                            : '$thisMonthMinutes분',
-                    subtitle: '${now.month}월 학습량',
-                    color: Colors.purple,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildStatCard(
+                      icon: Icons.calendar_month,
+                      title: '이번 달',
+                      value:
+                          thisMonthMinutes >= 60
+                              ? '${thisMonthMinutes ~/ 60}시간 ${thisMonthMinutes % 60}분'
+                              : '$thisMonthMinutes분',
+                      subtitle: '${now.month}월 학습량',
+                      color: Colors.purple,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
+                ],
+              ),
+              const SizedBox(height: 20),
 
-            // 과목별 통계 카드
-            _buildSubjectStatsCard(
-              subjectMinutes,
-              subjectSeconds,
-              getSubject,
-              timerBox,
-            ),
-            const SizedBox(height: 20),
+              // 과목별 통계 카드
+              _buildSubjectStatsCard(
+                subjectMinutes,
+                subjectSeconds,
+                getSubject,
+                timerBox,
+              ),
+              const SizedBox(height: 20),
 
-            // 최근 7일 차트 카드
-            _buildWeeklyChartCard(last7Days, last7Minutes),
-            const SizedBox(height: 20),
+              // 최근 7일 차트 카드
+              _buildWeeklyChartCard(last7Days, last7Minutes),
+              const SizedBox(height: 20),
 
-            // 최고 기록 카드
-            _buildBestDayCard(bestDay, bestMinutes, bestSeconds),
-          ],
+              // 최고 기록 카드
+              _buildBestDayCard(bestDay, bestMinutes, bestSeconds),
+            ],
+          ),
         ),
       ),
     );

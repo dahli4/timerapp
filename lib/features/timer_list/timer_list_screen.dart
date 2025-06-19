@@ -4,6 +4,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../../data/study_timer_model.dart';
 import 'timer_list_tile.dart';
 import '../timer_run/timer_run_screen.dart';
+import '../../widgets/daily_goal_card.dart';
+import '../../widgets/daily_goal_dialog.dart';
 
 class TimerListScreen extends StatefulWidget {
   const TimerListScreen({super.key});
@@ -441,112 +443,141 @@ class _TimerListScreenState extends State<TimerListScreen> {
     );
   }
 
+  // 목표 설정 다이얼로그 표시
+  Future<void> _showGoalDialog() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => const DailyGoalDialog(),
+    );
+
+    if (result == true) {
+      // 목표가 설정되면 화면 새로고침
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final timers = _timerBox.values.toList();
     return Scaffold(
-      appBar: AppBar(title: const Text('학습 타이머')),
-      body:
-          timers.isEmpty
-              ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.timer_outlined,
-                        size: 64,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.4),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      '등록된 타이머가 없습니다',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.7),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '+ 버튼을 눌러 새 타이머를 추가해보세요',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.5),
-                      ),
-                    ),
-                  ],
-                ),
-              )
-              : Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: ListView.builder(
-                  itemCount: timers.length,
-                  itemBuilder: (context, idx) {
-                    final timer = timers[idx];
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: TimerListTile(
-                        timer: timer,
-                        onEdit: () => _showEditTimerDialog(idx, timer),
-                        onDelete: () async {
-                          final confirmed = await showDialog<bool>(
-                            context: context,
-                            builder:
-                                (context) => AlertDialog(
-                                  title: const Text('타이머 삭제'),
-                                  content: Text(
-                                    '정말로 "${timer.title}" 타이머를 삭제하시겠습니까?',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed:
-                                          () =>
-                                              Navigator.of(context).pop(false),
-                                      child: const Text('취소'),
-                                    ),
-                                    TextButton(
-                                      onPressed:
-                                          () => Navigator.of(context).pop(true),
-                                      child: const Text('삭제'),
-                                    ),
-                                  ],
-                                ),
-                          );
+      // 앱바 제거로 더 넓은 공간 확보
+      body: SafeArea(
+        child: Column(
+          children: [
+            // 목표 카드 (일반 크기)
+            DailyGoalCard(onTap: _showGoalDialog),
 
-                          if (confirmed == true) {
-                            await _timerBox.deleteAt(idx);
-                            setState(() {});
-                          }
-                        },
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => TimerRunScreen(timer: timer),
+            // 타이머 목록
+            Expanded(
+              child:
+                  timers.isEmpty
+                      ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surface,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.timer_outlined,
+                                size: 64,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withValues(alpha: 0.4),
+                              ),
                             ),
-                          );
-                        },
+                            const SizedBox(height: 24),
+                            Text(
+                              '등록된 타이머가 없습니다',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withValues(alpha: 0.7),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '+ 버튼을 눌러 새 타이머를 추가해보세요',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withValues(alpha: 0.5),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                      : Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        child: ListView.builder(
+                          itemCount: timers.length,
+                          itemBuilder: (context, idx) {
+                            final timer = timers[idx];
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              child: TimerListTile(
+                                timer: timer,
+                                onEdit: () => _showEditTimerDialog(idx, timer),
+                                onDelete: () async {
+                                  final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder:
+                                        (context) => AlertDialog(
+                                          title: const Text('타이머 삭제'),
+                                          content: Text(
+                                            '정말로 "${timer.title}" 타이머를 삭제하시겠습니까?',
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed:
+                                                  () => Navigator.of(
+                                                    context,
+                                                  ).pop(false),
+                                              child: const Text('취소'),
+                                            ),
+                                            TextButton(
+                                              onPressed:
+                                                  () => Navigator.of(
+                                                    context,
+                                                  ).pop(true),
+                                              child: const Text('삭제'),
+                                            ),
+                                          ],
+                                        ),
+                                  );
+
+                                  if (confirmed == true) {
+                                    await _timerBox.deleteAt(idx);
+                                    setState(() {});
+                                  }
+                                },
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (_) => TimerRunScreen(timer: timer),
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                    );
-                  },
-                ),
-              ),
+            ),
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddTimerDialog,
         backgroundColor: Theme.of(context).colorScheme.primary,
