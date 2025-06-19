@@ -25,3 +25,36 @@ doc/api/
 
 .flutter-plugins
 .flutter-plugins-dependencies
+
+# Fastlane and deployment sensitive files
+ios/fastlane/Appfile
+android/fastlane/Appfile
+ios/Gemfile.lock
+android/Gemfile.lock
+android/key.properties
+android/app/key.jks
+**/google-play-api-key.json
+**/fastlane/report.xml
+**/fastlane/README.md
+
+# Apple certificates and provisioning profiles
+*.p12
+*.mobileprovision
+*.cer
+
+# Android signing
+*.keystore
+*.jks
+key.properties
+
+# Fastlane temporary files
+**/fastlane/Preview.html
+**/fastlane/screenshots
+**/fastlane/test_output
+
+# CI/CD secrets
+.env
+.env.local
+.env.production
+!.env.example
+secrets/
