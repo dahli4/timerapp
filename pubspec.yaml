@@ -3,7 +3,7 @@ description: "모딧 - 순간의 집중: 생산성 향상을 위한 스마트 �
 
 publish_to: 'none' 
 
-version: 1.0.0+1
+version: 1.0.1+3
 
 environment:
   sdk: ^3.7.2

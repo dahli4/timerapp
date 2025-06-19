@@ -7,9 +7,7 @@ import '../../data/study_record_model.dart';
 import '../../utils/notification_helper.dart';
 import '../../utils/background_notification_helper.dart';
 import '../../utils/sound_helper.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class TimerRunScreen extends StatefulWidget {
   final StudyTimerModel timer;
@@ -61,10 +59,10 @@ class _TimerRunScreenState extends State<TimerRunScreen>
           _ticker?.stop();
           // 타이머 완료 시 항상 최종 기록 저장
           _saveRecord();
-          // 타이머 완료 햅틱 피드백
+          // 타이머 완료 햅틱 피드백 + 사운드
           SoundHelper.playCompleteFeedback();
-          // 예약된 알림 외에도 직접 알림 표시 (백그라운드에서도 작동하도록)
-          _showCompletionNotification();
+          // 완료 다이얼로그 표시
+          _showCompletionDialog();
         }
       });
     });
@@ -75,6 +73,11 @@ class _TimerRunScreenState extends State<TimerRunScreen>
 
     // 타이머 시작 햅틱 피드백
     SoundHelper.playStartFeedback();
+
+    // 조용한 로그만 (권한 체크 없이)
+    if (_elapsedSeconds == 0) {
+      print('타이머 시작 - 완료 시 알림 예정');
+    }
 
     setState(() {
       _isRunning = true;
@@ -154,47 +157,6 @@ class _TimerRunScreenState extends State<TimerRunScreen>
     print('기록 저장: $minutesToSave분 $secondsToSave초');
   }
 
-  // 타이머 완료 시 알림 즉시 표시 (백그라운드에서도 작동하도록)
-  Future<void> _showCompletionNotification() async {
-    final prefs = await SharedPreferences.getInstance();
-    final useAlarm = prefs.getBool('alarm') ?? true;
-    final useVibration = prefs.getBool('vibration') ?? false;
-
-    if (!useAlarm) return;
-
-    // 알림 즉시 표시 - 더 강화된 설정으로
-    await flutterLocalNotificationsPlugin.show(
-      0,
-      '$_title 타이머 종료',
-      '설정한 시간이 모두 지났어요!',
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          'timer_channel',
-          '타이머 알림',
-          channelDescription: '타이머 종료 시 알림을 표시합니다.',
-          importance: Importance.max, // max로 변경
-          priority: Priority.max, // max로 변경
-          enableVibration: useVibration,
-          playSound: true,
-          category: AndroidNotificationCategory.alarm,
-          fullScreenIntent: true, // 화면이 꺼져 있어도 표시
-          autoCancel: false, // 자동으로 사라지지 않음
-          ongoing: false, // 완료 알림은 ongoing하지 않음
-          visibility: NotificationVisibility.public,
-          showWhen: true,
-          when: DateTime.now().millisecondsSinceEpoch,
-          ticker: '$_title 타이머가 종료되었습니다!',
-        ),
-        iOS: const DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-          interruptionLevel: InterruptionLevel.critical, // iOS에서 중요한 알림으로 설정
-        ),
-      ),
-    );
-  }
-
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -224,14 +186,68 @@ class _TimerRunScreenState extends State<TimerRunScreen>
             _ticker?.stop();
             // 타이머 완료 시 항상 최종 기록 저장
             _saveRecord();
-            // 타이머 완료 햅틱 피드백
+            // 타이머 완료 햅틱 피드백 + 사운드
             SoundHelper.playCompleteFeedback();
-            // 예약된 알림 외에도 직접 알림 표시
-            _showCompletionNotification();
+            // 완료 다이얼로그 표시
+            _showCompletionDialog();
           }
         });
       }
     }
+  }
+
+  // 타이머 완료 다이얼로그 표시
+  void _showCompletionDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(
+                Icons.celebration,
+                color: Color(_timer.colorHex ?? 0xFF4A90E2),
+                size: 28,
+              ),
+              const SizedBox(width: 8),
+              const Text('타이머 완료!'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '$_durationMinutes분 집중 완료!',
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                '🎉 수고하셨습니다! 🎉',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // 다이얼로그 닫기
+                Navigator.of(context).pop(); // 타이머 화면 닫기
+              },
+              child: const Text('확인'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   // 동기부여 메시지 생성
