@@ -22,13 +22,16 @@ class StudyTimerModelAdapter extends TypeAdapter<StudyTimerModel> {
       durationMinutes: fields[2] as int,
       createdAt: fields[3] as DateTime,
       colorHex: fields[4] as int?,
+      groupId: fields[5] as String?,
+      isInfinite: fields[6] as bool? ?? false,
+      isFavorite: fields[7] as bool? ?? false,
     );
   }
 
   @override
   void write(BinaryWriter writer, StudyTimerModel obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -38,7 +41,13 @@ class StudyTimerModelAdapter extends TypeAdapter<StudyTimerModel> {
       ..writeByte(3)
       ..write(obj.createdAt)
       ..writeByte(4)
-      ..write(obj.colorHex);
+      ..write(obj.colorHex)
+      ..writeByte(5)
+      ..write(obj.groupId)
+      ..writeByte(6)
+      ..write(obj._isInfinite)
+      ..writeByte(7)
+      ..write(obj._isFavorite);
   }
 
   @override

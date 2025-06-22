@@ -1,0 +1,14 @@
+- Added Favorites feature! Quickly find your most-used timers.
+
+- Added Timer Grouping! Organize timers by subject for better management.
+
+- Added Daily Goal Setting! Set target hours and track your progress.
+
+- Added Unlimited Timer! Study for extended sessions without interruption.0 Major Update
+
+Favorites Feature - Easily manage your most-used timers
+Timer Grouping - Organize study sessions by subject
+Daily Goal Setting - Stay motivated with target study hours  
+Unlimited Timer - Uninterrupted focus for extended sessions
+
+Maximize your focus with a smarter study timer!

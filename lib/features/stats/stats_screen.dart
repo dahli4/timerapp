@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../../data/study_record_model.dart';
 import '../../data/study_timer_model.dart';
 import 'subject_detail_screen.dart';
+import 'all_subjects_stats_screen.dart';
 
 class StatsScreen extends StatefulWidget {
   const StatsScreen({super.key});
@@ -221,216 +222,241 @@ class _StatsScreenState extends State<StatsScreen> {
     String Function(String) getSubject,
     Box<StudyTimerModel> timerBox,
   ) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color:
-          Theme.of(context).brightness == Brightness.light
-              ? Colors.white
-              : null,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: [
-              Theme.of(context).colorScheme.primary.withValues(alpha: 0.03),
-              Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AllSubjectsStatsScreen(),
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
+        );
+      },
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        color:
+            Theme.of(context).brightness == Brightness.light
+                ? Colors.white
+                : null,
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              colors: [
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.03),
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.subject_outlined,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      '과목별 누적 시간',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
                     color: Theme.of(
                       context,
-                    ).colorScheme.primary.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
+                    ).colorScheme.onSurface.withValues(alpha: 0.4),
                   ),
-                  child: Icon(
-                    Icons.subject_outlined,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  '과목별 누적 시간',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            if (subjectMinutes.isEmpty)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.school_outlined,
-                        size: 48,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.3),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        '아직 공부 기록이 없습니다.',
-                        style: TextStyle(
+                ],
+              ),
+              const SizedBox(height: 20),
+              if (subjectMinutes.isEmpty)
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.school_outlined,
+                          size: 48,
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.5),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                          ).colorScheme.onSurface.withValues(alpha: 0.3),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              ...subjectMinutes.entries.map((e) {
-                final minutes = e.value;
-                final seconds = subjectSeconds[e.key] ?? 0;
-
-                // 타이머 정보와 색상 가져오기
-                final timer = timerBox.values.firstWhere(
-                  (t) => t.id == e.key,
-                  orElse:
-                      () => StudyTimerModel(
-                        id: '',
-                        title: '삭제된 타이머',
-                        durationMinutes: 0,
-                        colorHex: 0xFF9E9E9E, // 회색으로 설정
-                        createdAt: DateTime.now(),
-                      ),
-                );
-                final subjectColor =
-                    timer.colorHex != null
-                        ? Color(timer.colorHex!)
-                        : Colors.blue.shade600;
-
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => SubjectDetailScreen(
-                              timerId: e.key,
-                              subjectName: getSubject(e.key),
-                              subjectColor: subjectColor,
-                            ),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    decoration: BoxDecoration(
-                      color:
-                          Theme.of(context).brightness == Brightness.light
-                              ? Colors.white
-                              : Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.08),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                      border: Border.all(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.08),
-                        width: 1,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          // 색상 인디케이터 추가
-                          Container(
-                            width: 5,
-                            height: 45,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  subjectColor,
-                                  subjectColor.withValues(alpha: 0.7),
-                                ],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                              ),
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Text(
-                              getSubject(e.key),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12), // 여백 추가
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.primary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              minutes >= 60
-                                  ? '${minutes ~/ 60}시간 ${minutes % 60}분'
-                                  : '$minutes분 ${seconds % 60}초',
-                              style: TextStyle(
-                                fontSize: 12, // 크기 줄임
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            size: 16,
+                        const SizedBox(height: 12),
+                        Text(
+                          '아직 공부 기록이 없습니다.',
+                          style: TextStyle(
                             color: Theme.of(
                               context,
-                            ).colorScheme.onSurface.withValues(alpha: 0.4),
+                            ).colorScheme.onSurface.withValues(alpha: 0.5),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                );
-              }),
-          ],
+                )
+              else
+                // 상위 5개만 표시
+                ...(subjectMinutes.entries.toList()
+                      ..sort((a, b) => b.value.compareTo(a.value)))
+                    .take(5)
+                    .map((e) {
+                      final minutes = e.value;
+                      final seconds = subjectSeconds[e.key] ?? 0;
+
+                      // 타이머 정보와 색상 가져오기
+                      final timer = timerBox.values.firstWhere(
+                        (t) => t.id == e.key,
+                        orElse:
+                            () => StudyTimerModel(
+                              id: '',
+                              title: '삭제된 타이머',
+                              durationMinutes: 0,
+                              colorHex: 0xFF9E9E9E, // 회색으로 설정
+                              createdAt: DateTime.now(),
+                            ),
+                      );
+                      final subjectColor =
+                          timer.colorHex != null
+                              ? Color(timer.colorHex!)
+                              : Colors.blue.shade600;
+
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => SubjectDetailScreen(
+                                    timerId: e.key,
+                                    subjectName: getSubject(e.key),
+                                    subjectColor: subjectColor,
+                                  ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color:
+                                Theme.of(context).brightness == Brightness.light
+                                    ? Colors.white
+                                    : Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withValues(alpha: 0.08),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                            border: Border.all(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.08),
+                              width: 1,
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                // 색상 인디케이터 추가
+                                Container(
+                                  width: 5,
+                                  height: 45,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        subjectColor,
+                                        subjectColor.withValues(alpha: 0.7),
+                                      ],
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                    ),
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Text(
+                                    getSubject(e.key),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12), // 여백 추가
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.primary
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    minutes >= 60
+                                        ? '${minutes ~/ 60}시간 ${minutes % 60}분'
+                                        : '$minutes분 ${seconds % 60}초',
+                                    style: TextStyle(
+                                      fontSize: 12, // 크기 줄임
+                                      fontWeight: FontWeight.bold,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 16,
+                                  color: Theme.of(context).colorScheme.onSurface
+                                      .withValues(alpha: 0.4),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+            ],
+          ),
         ),
       ),
     );

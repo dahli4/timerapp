@@ -56,9 +56,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (confirm == true) {
       final recordBox = Hive.box<StudyRecordModel>('records');
       await recordBox.clear();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('공부 기록이 초기화되었습니다.')));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('공부 기록이 초기화되었습니다.')));
+      }
     }
   }
 
@@ -120,9 +122,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         await recordBox.delete(key);
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${orphanedRecords.length}개의 기록을 정리했습니다.')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${orphanedRecords.length}개의 기록을 정리했습니다.')),
+        );
+      }
     }
   }
 
@@ -179,7 +183,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: ListTile(
                 leading: const Icon(Icons.info_outline),
                 title: const Text('앱 버전'),
-                subtitle: const Text('v1.0.0'),
+                subtitle: const Text('v1.1.0'),
                 enabled: false,
               ),
             ),

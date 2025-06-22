@@ -34,20 +34,51 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
     final isDeleted =
         !timerBox.values.any((timer) => timer.id == widget.timerId);
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor:
+          isDark
+              ? Theme.of(context).scaffoldBackgroundColor
+              : Colors.grey.shade50,
       appBar: AppBar(
-        title: Text(widget.subjectName),
+        title: Text(
+          isDeleted ? '삭제된 타이머' : widget.subjectName,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         backgroundColor: widget.subjectColor,
         foregroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                widget.subjectColor,
+                widget.subjectColor.withValues(alpha: 0.8),
+              ],
+            ),
+          ),
+        ),
         actions:
             isDeleted
                 ? [
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    tooltip: '이 타이머의 모든 기록 삭제',
-                    onPressed: () => _showDeleteRecordsDialog(context),
+                  Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    child: IconButton(
+                      icon: const Icon(Icons.delete_outline),
+                      tooltip: '이 타이머의 모든 기록 삭제',
+                      onPressed: () => _showDeleteRecordsDialog(context),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.white.withValues(alpha: 0.2),
+                      ),
+                    ),
                   ),
                 ]
                 : null,
@@ -425,6 +456,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
     BuildContext context,
     List<StudyRecordModel> allRecords,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     // 최근 기록들을 최대 개수 제한
     final recentRecords = allRecords.take(_maxSessionCount).toList();
 
@@ -595,7 +627,10 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w500,
-                                  color: widget.subjectColor,
+                                  color:
+                                      isDark
+                                          ? Colors.white
+                                          : widget.subjectColor,
                                 ),
                               ),
                             ),
@@ -626,7 +661,8 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: widget.subjectColor,
+                              color:
+                                  isDark ? Colors.white : widget.subjectColor,
                             ),
                           ),
                         ),
@@ -651,14 +687,14 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
                 },
                 icon: Icon(
                   _showAllSessions ? Icons.expand_less : Icons.expand_more,
-                  color: widget.subjectColor,
+                  color: isDark ? Colors.blue.shade300 : widget.subjectColor,
                 ),
                 label: Text(
                   _showAllSessions
                       ? '접기'
                       : '더보기 (${recentRecords.length - _initialSessionCount}개)',
                   style: TextStyle(
-                    color: widget.subjectColor,
+                    color: isDark ? Colors.blue.shade300 : widget.subjectColor,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -717,11 +753,13 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
       }
 
       // 이전 화면으로 돌아가기
-      Navigator.of(context).pop();
+      if (mounted) {
+        Navigator.of(context).pop();
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('$recordCount개의 기록을 삭제했습니다.')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('$recordCount개의 기록을 삭제했습니다.')));
+      }
     }
   }
 }
