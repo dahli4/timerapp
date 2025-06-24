@@ -84,21 +84,30 @@ class TimerListTile extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        timer.durationMinutes >= 60
-                            ? (() {
-                              final h = timer.durationMinutes ~/ 60;
-                              final m = timer.durationMinutes % 60;
-                              return m > 0 ? '$h시간 $m분' : '$h시간';
-                            })()
-                            : '${timer.durationMinutes}분',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.7),
-                          fontWeight: FontWeight.w500,
-                        ),
+                      Row(
+                        children: [
+                          if (timer.isInfinite)
+                            Icon(Icons.all_inclusive, size: 16, color: color),
+                          if (timer.isInfinite) const SizedBox(width: 4),
+                          Text(
+                            timer.isInfinite
+                                ? '무제한'
+                                : timer.durationMinutes >= 60
+                                ? (() {
+                                  final h = timer.durationMinutes ~/ 60;
+                                  final m = timer.durationMinutes % 60;
+                                  return m > 0 ? '$h시간 $m분' : '$h시간';
+                                })()
+                                : '${timer.durationMinutes}분',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.7),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

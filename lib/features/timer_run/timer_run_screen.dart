@@ -22,13 +22,14 @@ class _TimerRunScreenState extends State<TimerRunScreen>
   late final int _totalSeconds;
   late final String _title;
   late final int _durationMinutes;
-  late final StudyTimerModel _timer;
+  late StudyTimerModel _timer; // final 제거하여 변경 가능하게 함
 
   Ticker? _ticker;
   double _elapsedSeconds = 0;
   bool _isRunning = false;
   DateTime? _startTime;
   DateTime? _pausedTime; // 정지한 시간 저장
+  bool _hasRecordSaved = false; // 기록 저장 여부 추적
 
   @override
   void initState() {
@@ -76,7 +77,7 @@ class _TimerRunScreenState extends State<TimerRunScreen>
 
     // 조용한 로그만 (권한 체크 없이)
     if (_elapsedSeconds == 0) {
-      print('타이머 시작 - 완료 시 알림 예정');
+      debugPrint('타이머 시작 - 완료 시 알림 예정');
     }
 
     setState(() {
@@ -127,6 +128,7 @@ class _TimerRunScreenState extends State<TimerRunScreen>
       _isRunning = false;
       _startTime = null;
       _pausedTime = null; // 정지 시간도 초기화
+      _hasRecordSaved = false; // 플래그 리셋
     });
     _ticker?.stop();
     cancelTimerNotification();
@@ -134,6 +136,9 @@ class _TimerRunScreenState extends State<TimerRunScreen>
   }
 
   void _saveRecord() async {
+    // 이미 저장되었거나 1분 미만이면 저장하지 않음
+    if (_hasRecordSaved) return;
+
     final recordBox = Hive.box<StudyRecordModel>('records');
 
     // 실제 경과 시간을 정확히 계산
@@ -154,12 +159,44 @@ class _TimerRunScreenState extends State<TimerRunScreen>
       ),
     );
 
-    print('기록 저장: $minutesToSave분 $secondsToSave초');
+    _hasRecordSaved = true; // 저장 완료 플래그 설정
+    debugPrint('기록 저장: $minutesToSave분 $secondsToSave초');
+  }
+
+  Future<void> _toggleFavorite() async {
+    final timerBox = Hive.box<StudyTimerModel>('timers');
+    final timers = timerBox.values.toList();
+    final index = timers.indexWhere((t) => t.id == _timer.id);
+
+    if (index >= 0) {
+      final updatedTimer = StudyTimerModel(
+        id: _timer.id,
+        title: _timer.title,
+        durationMinutes: _timer.durationMinutes,
+        createdAt: _timer.createdAt,
+        colorHex: _timer.colorHex,
+        groupId: _timer.groupId,
+        isInfinite: _timer.isInfinite,
+        isFavorite: !_timer.isFavorite,
+      );
+      await timerBox.putAt(index, updatedTimer);
+      setState(() {
+        // _timer를 업데이트하여 UI 반영
+        _timer = updatedTimer;
+      });
+    }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+
+    // 화면을 나갈 때 실행 중이면 정지하고 기록 저장 (1분 이상 사용 시)
+    if (_isRunning && _elapsedSeconds >= 60) {
+      _ticker?.stop();
+      _saveRecord();
+    }
+
     _ticker?.dispose();
     super.dispose();
   }
@@ -192,6 +229,12 @@ class _TimerRunScreenState extends State<TimerRunScreen>
             _showCompletionDialog();
           }
         });
+      }
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      // 앱이 백그라운드로 가거나 비활성화될 때 기록 저장 (1분 이상 사용 시)
+      if (_isRunning && _elapsedSeconds >= 60) {
+        _saveRecord();
       }
     }
   }
@@ -345,99 +388,128 @@ class _TimerRunScreenState extends State<TimerRunScreen>
             ? Color(_timer.colorHex!)
             : Colors.blue.shade600;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(_title), elevation: 0, centerTitle: true),
-      body: Column(
-        children: [
-          // 통계 기록 안내 (배경 제거, 텍스트만)
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              '💡 1분 이상 사용시 통계에 기록됩니다',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: isDark ? Colors.white60 : Colors.black54,
-                fontStyle: FontStyle.italic,
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) async {
+        // 뒤로가기할 때 실행 중이면 기록 저장 (1분 이상 사용 시)
+        if (_isRunning && _elapsedSeconds >= 60) {
+          _saveRecord();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(_title),
+          elevation: 0,
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: Icon(
+                _timer.isFavorite ? Icons.star : Icons.star_border,
+                color: _timer.isFavorite ? Colors.amber : null,
+              ),
+              onPressed: _toggleFavorite,
+            ),
+          ],
+        ),
+        body: Column(
+          children: [
+            // 통계 기록 안내 (배경 제거, 텍스트만)
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                '💡 1분 이상 사용시 통계에 기록됩니다',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: isDark ? Colors.white60 : Colors.black54,
+                  fontStyle: FontStyle.italic,
+                ),
               ),
             ),
-          ),
 
-          // 나머지 컨텐츠
-          Expanded(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      CustomPaint(
-                        size: const Size(300, 300),
-                        painter: TimerCirclePainter(
-                          progress: progress,
-                          bgColor: timerBgColor, // 배경색 전달
-                          progressColor: timerColor, // 타이머 색상 전달
+            // 나머지 컨텐츠
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        CustomPaint(
+                          size: const Size(300, 300),
+                          painter: TimerCirclePainter(
+                            progress: progress,
+                            bgColor: timerBgColor, // 배경색 전달
+                            progressColor: timerColor, // 타이머 색상 전달
+                          ),
                         ),
-                      ),
-                      Text(
-                        '$minutes:$seconds',
-                        style: TextStyle(
-                          fontSize: 48,
-                          color: timerTextColor,
-                          fontWeight: FontWeight.bold,
+                        Text(
+                          '$minutes:$seconds',
+                          style: TextStyle(
+                            fontSize: 48,
+                            color: timerTextColor,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  // 정지한 시간 표시 (공간은 항상 유지, 텍스트만 조건부)
-                  Container(
-                    height: 60,
-                    alignment: Alignment.center,
-                    child:
-                        _pausedTime != null
-                            ? Padding(
-                              padding: const EdgeInsets.only(
-                                top: 16.0,
-                                bottom: 12.0,
-                              ),
-                              child: Text(
-                                '정지한 시각: ${DateFormat('a h시 mm분', 'ko_KR').format(_pausedTime!)}',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  color:
-                                      isDark ? Colors.white70 : Colors.black54,
+                      ],
+                    ),
+                    // 정지한 시간 표시 (공간은 항상 유지, 텍스트만 조건부)
+                    Container(
+                      height: 60,
+                      alignment: Alignment.center,
+                      child:
+                          _pausedTime != null
+                              ? Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 16.0,
+                                  bottom: 12.0,
                                 ),
-                              ),
-                            )
-                            : const SizedBox.shrink(), // 공간은 유지하되 텍스트만 숨김
-                  ),
-                  const SizedBox(height: 24), // 고정 간격
-                  // 동기부여 메시지 추가
-                  _buildMotivationalMessage(progress, _elapsedSeconds, isDark),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        icon: Icon(_isRunning ? Icons.pause : Icons.play_arrow),
-                        iconSize: 48,
-                        onPressed: _isRunning ? _pause : _start,
-                      ),
-                      const SizedBox(width: 24),
-                      IconButton(
-                        icon: const Icon(Icons.refresh),
-                        iconSize: 48,
-                        onPressed: _reset,
-                      ),
-                    ],
-                  ),
-                ],
+                                child: Text(
+                                  '정지한 시각: ${DateFormat('a h시 mm분', 'ko_KR').format(_pausedTime!)}',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    color:
+                                        isDark
+                                            ? Colors.white70
+                                            : Colors.black54,
+                                  ),
+                                ),
+                              )
+                              : const SizedBox.shrink(), // 공간은 유지하되 텍스트만 숨김
+                    ),
+                    const SizedBox(height: 24), // 고정 간격
+                    // 동기부여 메시지 추가
+                    _buildMotivationalMessage(
+                      progress,
+                      _elapsedSeconds,
+                      isDark,
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            _isRunning ? Icons.pause : Icons.play_arrow,
+                          ),
+                          iconSize: 48,
+                          onPressed: _isRunning ? _pause : _start,
+                        ),
+                        const SizedBox(width: 24),
+                        IconButton(
+                          icon: const Icon(Icons.refresh),
+                          iconSize: 48,
+                          onPressed: _reset,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+      ), // PopScope 닫는 괄호 추가
     );
   }
 }

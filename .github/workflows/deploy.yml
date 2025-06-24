@@ -1,0 +1,163 @@
+name: 타이머앱 자동배포
+
+on:
+  # 수동 실행
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: '배포 플랫폼'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+        - both
+        - ios
+        - android
+      release_type:
+        description: '배포 타입'
+        required: true
+        default: 'beta'
+        type: choice
+        options:
+        - beta
+        - release
+  
+  # 태그 푸시 시 자동 실행 (예: v1.0.0)
+  push:
+    tags:
+      - 'v*'
+
+env:
+  FLUTTER_VERSION: '3.24.5'
+
+jobs:
+  # iOS 배포
+  deploy_ios:
+    if: github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'both' || startsWith(github.ref, 'refs/tags/')
+    runs-on: macos-latest
+    
+    steps:
+    - name: 코드 체크아웃
+      uses: actions/checkout@v4
+    
+    - name: Flutter 설치
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        channel: 'stable'
+    
+    - name: Ruby 설정
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.1'
+        bundler-cache: true
+        working-directory: ios
+    
+    - name: Flutter 의존성 설치
+      run: flutter pub get
+    
+    - name: iOS 코드 서명 설정
+      uses: apple-actions/import-codesign-certs@v3
+      with:
+        p12-file-base64: ${{ secrets.IOS_P12_BASE64 }}
+        p12-password: ${{ secrets.IOS_P12_PASSWORD }}
+    
+    - name: iOS 프로비저닝 프로파일 설치
+      uses: apple-actions/download-provisioning-profiles@v3
+      with:
+        bundle-id: com.dong.timerapp
+        issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+        api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
+        api-private-key: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+    
+    - name: iOS 베타 배포 (TestFlight)
+      if: github.event.inputs.release_type == 'beta' || (startsWith(github.ref, 'refs/tags/') && contains(github.ref, 'beta'))
+      working-directory: ios
+      run: |
+        fastlane beta
+      env:
+        FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
+        FASTLANE_SESSION: ${{ secrets.FASTLANE_SESSION }}
+    
+    - name: iOS 프로덕션 배포 (App Store)
+      if: github.event.inputs.release_type == 'release' || (startsWith(github.ref, 'refs/tags/') && !contains(github.ref, 'beta'))
+      working-directory: ios
+      run: |
+        fastlane release
+      env:
+        FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
+        FASTLANE_SESSION: ${{ secrets.FASTLANE_SESSION }}
+
+  # Android 배포
+  deploy_android:
+    if: github.event.inputs.platform == 'android' || github.event.inputs.platform == 'both' || startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 코드 체크아웃
+      uses: actions/checkout@v4
+    
+    - name: Java 설정
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+    
+    - name: Flutter 설치
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        channel: 'stable'
+    
+    - name: Ruby 설정
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.1'
+        bundler-cache: true
+        working-directory: android
+    
+    - name: Flutter 의존성 설치
+      run: flutter pub get
+    
+    - name: Android 키스토어 설정
+      run: |
+        echo '${{ secrets.ANDROID_KEYSTORE_BASE64 }}' | base64 -d > android/key.jks
+        echo 'storeFile=key.jks' >> android/key.properties
+        echo 'keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}' >> android/key.properties
+        echo 'storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}' >> android/key.properties
+        echo 'keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}' >> android/key.properties
+    
+    - name: Google Play API 키 설정
+      run: |
+        echo '${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}' > android/fastlane/google-play-api-key.json
+    
+    - name: Android 베타 배포 (Internal Testing)
+      if: github.event.inputs.release_type == 'beta' || (startsWith(github.ref, 'refs/tags/') && contains(github.ref, 'beta'))
+      working-directory: android
+      run: |
+        fastlane beta
+    
+    - name: Android 프로덕션 배포 (Google Play)
+      if: github.event.inputs.release_type == 'release' || (startsWith(github.ref, 'refs/tags/') && !contains(github.ref, 'beta'))
+      working-directory: android
+      run: |
+        fastlane deploy
+
+  # 배포 완료 알림
+  notify:
+    needs: [deploy_ios, deploy_android]
+    if: always()
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 배포 결과 요약
+      run: |
+        echo "## 🚀 타이머앱 자동배포 결과" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **플랫폼**: ${{ github.event.inputs.platform || 'both' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **배포 타입**: ${{ github.event.inputs.release_type || 'release' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **실행 시간**: $(date)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 배포 상태" >> $GITHUB_STEP_SUMMARY
+        echo "- iOS: ${{ needs.deploy_ios.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Android: ${{ needs.deploy_android.result }}" >> $GITHUB_STEP_SUMMARY

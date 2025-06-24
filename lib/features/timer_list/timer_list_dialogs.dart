@@ -9,6 +9,7 @@ Future<void> showTimerDialog({
   required VoidCallback onConfirm,
   required String title,
   String confirmText = '확인',
+  ValueNotifier<bool>? isInfiniteNotifier,
 }) {
   final colors = [
     Colors.red.shade500,
@@ -23,6 +24,8 @@ Future<void> showTimerDialog({
     Colors.cyan.shade500,
   ];
 
+  isInfiniteNotifier ??= ValueNotifier<bool>(false);
+
   ValueNotifier<String> durationDisplayNotifier = ValueNotifier(
     durationController.text.isEmpty ? '' : durationController.text,
   );
@@ -31,296 +34,358 @@ Future<void> showTimerDialog({
     context: context,
     barrierDismissible: true,
     builder: (context) {
-      return Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Container(
-          width: double.infinity,
-          constraints: const BoxConstraints(maxWidth: 400),
-          margin: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color:
-                Theme.of(context).brightness == Brightness.light
-                    ? Colors.white
-                    : Theme.of(context).colorScheme.surface,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                Padding(
-                  padding: const EdgeInsets.only(
-                    left: 20,
-                    right: 8,
-                    top: 16,
-                    bottom: 8,
+      return Material(
+        type: MaterialType.transparency,
+        child: Center(
+          child: Container(
+            width: double.infinity,
+            constraints: const BoxConstraints(maxWidth: 400, maxHeight: 800),
+            margin: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 50,
+              bottom:
+                  MediaQuery.of(context).viewInsets.bottom > 0
+                      ? MediaQuery.of(context).viewInsets.bottom + 10
+                      : 50,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color:
+                  Theme.of(context).brightness == Brightness.light
+                      ? Colors.white
+                      : Theme.of(context).colorScheme.surface,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 20,
+                      right: 8,
+                      top: 16,
+                      bottom: 8,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.timer,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: Icon(
+                            Icons.close,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                            size: 20,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.timer,
-                        color: Theme.of(context).colorScheme.primary,
-                        size: 24,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          title,
+
+                  // Content
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 제목 입력
+                        Text(
+                          '이름',
                           style: Theme.of(
                             context,
-                          ).textTheme.titleLarge?.copyWith(
+                          ).textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: Icon(
-                          Icons.close,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.6),
-                          size: 20,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Content
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 제목 입력
-                      Text(
-                        '이름',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: titleController,
-                        decoration: InputDecoration(
-                          hintText: '타이머 이름',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.outline.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.outline.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // 시간 설정
-                      Text(
-                        '시간',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      ValueListenableBuilder<String>(
-                        valueListenable: durationDisplayNotifier,
-                        builder:
-                            (context, duration, _) => TimeSelectorWidget(
-                              durationController: durationController,
-                              durationDisplayNotifier: durationDisplayNotifier,
-                            ),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // 색상 선택
-                      Text(
-                        '색상',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      ValueListenableBuilder<Color>(
-                        valueListenable: colorNotifier,
-                        builder:
-                            (context, selectedColor, _) => Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: titleController,
+                          decoration: InputDecoration(
+                            hintText: '타이머 이름',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.surface.withValues(alpha: 0.5),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.outline.withValues(alpha: 0.2),
-                                ),
+                                ).colorScheme.outline.withValues(alpha: 0.3),
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.outline.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // 무제한 타이머 스위치
+                        ValueListenableBuilder<bool>(
+                          valueListenable: isInfiniteNotifier!,
+                          builder:
+                              (context, isInfinite, _) => Row(
                                 children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        width: 24,
-                                        height: 24,
-                                        decoration: BoxDecoration(
-                                          color: selectedColor,
-                                          shape: BoxShape.circle,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: selectedColor.withValues(
-                                                alpha: 0.3,
-                                              ),
-                                              blurRadius: 4,
-                                              offset: const Offset(0, 2),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Text(
-                                        '선택된 색상',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w500,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface
-                                              .withValues(alpha: 0.7),
-                                        ),
-                                      ),
-                                    ],
+                                  Icon(
+                                    isInfinite
+                                        ? Icons.all_inclusive
+                                        : Icons.timer,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                    size: 20,
                                   ),
-                                  const SizedBox(height: 16),
-                                  GridView.builder(
-                                    shrinkWrap: true,
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    gridDelegate:
-                                        const SliverGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisCount: 5,
-                                          mainAxisSpacing: 12,
-                                          crossAxisSpacing: 12,
-                                          childAspectRatio: 1,
-                                        ),
-                                    itemCount: colors.length,
-                                    itemBuilder: (context, index) {
-                                      final color = colors[index];
-                                      final isSelected = selectedColor == color;
-                                      return ColorButtonWidget(
-                                        color: color,
-                                        isSelected: isSelected,
-                                        onTap:
-                                            () => colorNotifier.value = color,
-                                      );
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      '무제한 타이머',
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleSmall?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.onSurface,
+                                      ),
+                                    ),
+                                  ),
+                                  Switch(
+                                    value: isInfinite,
+                                    onChanged: (value) {
+                                      isInfiniteNotifier!.value = value;
+                                      if (value) {
+                                        durationController.clear();
+                                        durationDisplayNotifier.value = '';
+                                      }
                                     },
+                                    activeColor:
+                                        Theme.of(context).colorScheme.primary,
                                   ),
                                 ],
                               ),
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
+                        ),
 
-                const SizedBox(height: 24),
+                        const SizedBox(height: 20),
 
-                // Action buttons
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 16,
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: Text(
-                            '취소',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurface.withValues(alpha: 0.7),
-                            ),
+                        // 시간 설정 (무제한 타이머가 아닐 때만 표시)
+                        ValueListenableBuilder<bool>(
+                          valueListenable: isInfiniteNotifier,
+                          builder:
+                              (context, isInfinite, _) =>
+                                  isInfinite
+                                      ? const SizedBox.shrink()
+                                      : Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '시간',
+                                            style: Theme.of(
+                                              context,
+                                            ).textTheme.titleSmall?.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                              color:
+                                                  Theme.of(
+                                                    context,
+                                                  ).colorScheme.onSurface,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          ValueListenableBuilder<String>(
+                                            valueListenable:
+                                                durationDisplayNotifier,
+                                            builder:
+                                                (
+                                                  context,
+                                                  duration,
+                                                  _,
+                                                ) => TimeSelectorWidget(
+                                                  durationController:
+                                                      durationController,
+                                                  durationDisplayNotifier:
+                                                      durationDisplayNotifier,
+                                                ),
+                                          ),
+                                          const SizedBox(height: 20),
+                                        ],
+                                      ),
+                        ),
+
+                        // 색상 선택
+                        Text(
+                          '색상',
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        flex: 2,
-                        child: ElevatedButton(
-                          onPressed: onConfirm,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                Theme.of(context).colorScheme.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                        const SizedBox(height: 12),
+                        ValueListenableBuilder<Color>(
+                          valueListenable: colorNotifier,
+                          builder:
+                              (context, selectedColor, _) => Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.surface.withValues(alpha: 0.5),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Theme.of(context).colorScheme.outline
+                                        .withValues(alpha: 0.2),
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          width: 24,
+                                          height: 24,
+                                          decoration: BoxDecoration(
+                                            color: selectedColor,
+                                            shape: BoxShape.circle,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: selectedColor.withValues(
+                                                  alpha: 0.3,
+                                                ),
+                                                blurRadius: 4,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Text(
+                                          '선택된 색상',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface
+                                                .withValues(alpha: 0.7),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    GridView.builder(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      gridDelegate:
+                                          const SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: 5,
+                                            mainAxisSpacing: 12,
+                                            crossAxisSpacing: 12,
+                                            childAspectRatio: 1,
+                                          ),
+                                      itemCount: colors.length,
+                                      itemBuilder: (context, index) {
+                                        final color = colors[index];
+                                        final isSelected =
+                                            selectedColor == color;
+                                        return ColorButtonWidget(
+                                          color: color,
+                                          isSelected: isSelected,
+                                          onTap:
+                                              () => colorNotifier.value = color,
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Action buttons
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
-                            elevation: 0,
-                          ),
-                          child: Text(
-                            confirmText,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            child: const Text('취소'),
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: onConfirm,
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(confirmText),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

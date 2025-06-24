@@ -14,6 +14,10 @@ doc/api/
 # dotenv environment variables file
 .env*
 
+# App Store Connect credentials (보안)
+.app_store_config
+.app_store_password
+
 # Avoid committing generated Javascript files:
 *.dart.js
 *.info.json      # Produced by the --dump-info flag.
@@ -25,3 +29,36 @@ doc/api/
 
 .flutter-plugins
 .flutter-plugins-dependencies
+
+# Fastlane and deployment sensitive files
+ios/fastlane/Appfile
+android/fastlane/Appfile
+ios/Gemfile.lock
+android/Gemfile.lock
+android/key.properties
+android/app/key.jks
+**/google-play-api-key.json
+**/fastlane/report.xml
+**/fastlane/README.md
+
+# Apple certificates and provisioning profiles
+*.p12
+*.mobileprovision
+*.cer
+
+# Android signing
+*.keystore
+*.jks
+key.properties
+
+# Fastlane temporary files
+**/fastlane/Preview.html
+**/fastlane/screenshots
+**/fastlane/test_output
+
+# CI/CD secrets
+.env
+.env.local
+.env.production
+!.env.example
+secrets/

@@ -3,12 +3,13 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:timerapp/utils/notification_helper.dart';
 import 'utils/background_notification_helper.dart';
 import 'utils/background_sync_helper.dart';
-import 'utils/dummy_data_helper.dart';
 import 'app/main_tab_controller.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'data/study_timer_model.dart';
 import 'data/study_record_model.dart';
+import 'data/daily_goal_model.dart';
+import 'data/timer_group_model.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
@@ -24,11 +25,15 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(StudyTimerModelAdapter());
   Hive.registerAdapter(StudyRecordModelAdapter());
+  Hive.registerAdapter(DailyGoalModelAdapter());
+  Hive.registerAdapter(TimerGroupModelAdapter());
   await Hive.openBox<StudyTimerModel>('timers');
   await Hive.openBox<StudyRecordModel>('records');
+  await Hive.openBox<DailyGoalModel>('daily_goals');
+  await Hive.openBox<TimerGroupModel>('groups');
 
-  // 🎬 아이패드 스크린샷용 더미 데이터 생성
-  // await DummyDataHelper.generateDummyData();
+  // 타이머 데이터 마이그레이션 (무제한 타이머 호환성 수정)
+  await _migrateTimerData();
 
   await initializeNotifications();
 
@@ -38,6 +43,62 @@ void main() async {
   }
 
   runApp(const MyApp());
+}
+
+// 타이머 데이터 마이그레이션 함수 (무제한 타이머 호환성 수정)
+Future<void> _migrateTimerData() async {
+  try {
+    final timerBox = Hive.box<StudyTimerModel>('timers');
+    final timers = timerBox.values.toList();
+
+    bool needsMigration = false;
+    final migratedTimers = <StudyTimerModel>[];
+
+    for (final timer in timers) {
+      // 무제한 타이머로 생성되었지만 durationMinutes가 0이 아닌 경우 수정
+      // 또는 일반 타이머로 생성되었지만 무제한 타이머 속성이 잘못된 경우 수정
+
+      // 무제한 타이머의 경우 durationMinutes를 0으로 설정
+      if (timer.isInfinite && timer.durationMinutes != 0) {
+        final migratedTimer = timer.copyWith(durationMinutes: 0);
+        migratedTimers.add(migratedTimer);
+        needsMigration = true;
+      }
+      // 일반 타이머인데 durationMinutes가 0인 경우 (잘못된 데이터)
+      else if (!timer.isInfinite && timer.durationMinutes == 0) {
+        // 이런 경우는 무제한 타이머로 변경하거나 기본값(25분) 설정
+        // 제목에 "무제한"이 포함되어 있으면 무제한 타이머로 변경
+        if (timer.title.contains('무제한') ||
+            timer.title.contains('unlimited') ||
+            timer.title.contains('infinite')) {
+          final migratedTimer = timer.copyWith(
+            isInfinite: true,
+            durationMinutes: 0,
+          );
+          migratedTimers.add(migratedTimer);
+          needsMigration = true;
+        } else {
+          // 그렇지 않으면 기본값 25분으로 설정
+          final migratedTimer = timer.copyWith(durationMinutes: 25);
+          migratedTimers.add(migratedTimer);
+          needsMigration = true;
+        }
+      } else {
+        migratedTimers.add(timer);
+      }
+    }
+
+    // 마이그레이션이 필요한 경우 데이터 업데이트
+    if (needsMigration) {
+      await timerBox.clear();
+      for (final timer in migratedTimers) {
+        await timerBox.add(timer);
+      }
+      debugPrint('타이머 데이터 마이그레이션 완료: ${migratedTimers.length}개 타이머 처리');
+    }
+  } catch (e) {
+    debugPrint('타이머 데이터 마이그레이션 오류: $e');
+  }
 }
 
 class MyApp extends StatelessWidget {

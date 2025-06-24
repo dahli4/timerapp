@@ -1,0 +1,5 @@
+# Appfile template for Android
+# Copy this file to Appfile and fill in your actual values
+
+json_key_file(ENV["GOOGLE_PLAY_JSON_KEY_FILE"]) # Path to the json secret file from environment variable
+package_name("com.dong.timerapp") # e.g. com.krausefx.app
