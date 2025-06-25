@@ -5,6 +5,11 @@
 
 set -e
 
+# 현재 시간 로깅 함수
+log_with_time() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
+}
+
 PLATFORM=$1
 LANE=$2
 VERSION_BUMP=$3
@@ -36,33 +41,37 @@ if [ -z "$PLATFORM" ] || [ -z "$LANE" ]; then
     exit 1
 fi
 
-echo "🚀 타이머앱 자동배포 시작"
+log_with_time "🚀 타이머앱 자동배포 시작"
 echo "플랫폼: $PLATFORM"
 echo "타입: $LANE"
 echo ""
 
 # Flutter 프로젝트 체크
 if [ ! -f "pubspec.yaml" ]; then
-    echo "❌ Flutter 프로젝트 루트 디렉토리에서 실행해주세요"
+    log_with_time "❌ Flutter 프로젝트 루트 디렉토리에서 실행해주세요"
     exit 1
 fi
 
 # Flutter 환경 체크
+log_with_time "🔍 Flutter 환경 체크 중..."
 if ! command -v flutter &> /dev/null; then
-    echo "❌ Flutter가 설치되지 않았습니다"
+    log_with_time "❌ Flutter가 설치되지 않았습니다"
     exit 1
 fi
 
 # Fastlane 환경 체크
+log_with_time "🔍 Fastlane 환경 체크 중..."
 if ! command -v fastlane &> /dev/null; then
-    echo "❌ Fastlane이 설치되지 않았습니다"
+    log_with_time "❌ Fastlane이 설치되지 않았습니다"
     exit 1
 fi
+
+log_with_time "✅ 환경 체크 완료"
 
 # 플랫폼별 배포
 case $PLATFORM in
     ios)
-        echo "📱 iOS 배포 시작..."
+        log_with_time "📱 iOS 배포 시작..."
         
         # 릴리즈 노트 확인
         if [ -f "ios/fastlane/metadata/ko/release_notes.txt" ]; then
@@ -81,32 +90,32 @@ case $PLATFORM in
             fi
         fi
         
-        cd ios
+        cd ios || { echo "❌ iOS 디렉터리를 찾을 수 없습니다"; exit 1; }
         case $LANE in
             beta)
                 echo "🧪 TestFlight 베타 배포..."
                 if [ "$VERSION_BUMP" = "patch" ]; then
                     echo "📈 패치 버전 업데이트 포함"
-                    fastlane beta_patch
+                    fastlane beta_patch || { echo "❌ TestFlight 베타 배포 (패치) 실패"; exit 1; }
                 elif [ "$VERSION_BUMP" = "minor" ]; then
                     echo "📈 마이너 버전 업데이트 포함"
-                    fastlane beta_minor
+                    fastlane beta_minor || { echo "❌ TestFlight 베타 배포 (마이너) 실패"; exit 1; }
                 else
                     echo "🔢 빌드 번호만 증가"
-                    fastlane beta
+                    fastlane beta || { echo "❌ TestFlight 베타 배포 실패"; exit 1; }
                 fi
                 ;;
             release)
                 echo "🚀 App Store 배포 (업로드만)..."
                 if [ "$VERSION_BUMP" = "patch" ]; then
                     echo "📈 패치 버전 업데이트 포함"
-                    fastlane release_patch
+                    fastlane release_patch || { echo "❌ App Store 배포 (패치) 실패"; exit 1; }
                 elif [ "$VERSION_BUMP" = "minor" ]; then
                     echo "📈 마이너 버전 업데이트 포함"
-                    fastlane release_minor
+                    fastlane release_minor || { echo "❌ App Store 배포 (마이너) 실패"; exit 1; }
                 else
                     echo "🔢 빌드 번호만 증가"
-                    fastlane release
+                    fastlane release || { echo "❌ App Store 배포 실패"; exit 1; }
                 fi
                 ;;
             submit)
@@ -131,7 +140,7 @@ case $PLATFORM in
         esac
         ;;
     android)
-        echo "🤖 Android 배포 시작..."
+        log_with_time "🤖 Android 배포 시작..."
         cd android
         case $LANE in
             beta)
@@ -159,5 +168,5 @@ case $PLATFORM in
 esac
 
 echo ""
-echo "✅ 배포 완료!"
-echo "📱 $PLATFORM $LANE 배포가 성공적으로 완료되었습니다."
+log_with_time "✅ 배포 완료!"
+log_with_time "📱 $PLATFORM $LANE 배포가 성공적으로 완료되었습니다."
