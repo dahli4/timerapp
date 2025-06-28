@@ -7,11 +7,15 @@ class GoalAchievementDetailScreen extends StatefulWidget {
   const GoalAchievementDetailScreen({super.key});
 
   @override
-  State<GoalAchievementDetailScreen> createState() => _GoalAchievementDetailScreenState();
+  State<GoalAchievementDetailScreen> createState() =>
+      _GoalAchievementDetailScreenState();
 }
 
-class _GoalAchievementDetailScreenState extends State<GoalAchievementDetailScreen> {
-  final Box<StudyRecordModel> _recordBox = Hive.box<StudyRecordModel>('records');
+class _GoalAchievementDetailScreenState
+    extends State<GoalAchievementDetailScreen> {
+  final Box<StudyRecordModel> _recordBox = Hive.box<StudyRecordModel>(
+    'records',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -59,15 +63,20 @@ class _GoalAchievementDetailScreenState extends State<GoalAchievementDetailScree
     // 일별 학습 시간 계산
     for (var record in records) {
       if (record.date.isAfter(fromDate)) {
-        final dateKey = '${record.date.year}-${record.date.month.toString().padLeft(2, '0')}-${record.date.day.toString().padLeft(2, '0')}';
-        dailyMinutes[dateKey] = (dailyMinutes[dateKey] ?? 0) + record.minutes + (record.seconds / 60).round();
+        final dateKey =
+            '${record.date.year}-${record.date.month.toString().padLeft(2, '0')}-${record.date.day.toString().padLeft(2, '0')}';
+        dailyMinutes[dateKey] =
+            (dailyMinutes[dateKey] ?? 0) +
+            record.minutes +
+            (record.seconds / 60).round();
       }
     }
 
     // 일별 목표 시간 계산
     for (var goal in goals) {
       if (goal.date.isAfter(fromDate)) {
-        final dateKey = '${goal.date.year}-${goal.date.month.toString().padLeft(2, '0')}-${goal.date.day.toString().padLeft(2, '0')}';
+        final dateKey =
+            '${goal.date.year}-${goal.date.month.toString().padLeft(2, '0')}-${goal.date.day.toString().padLeft(2, '0')}';
         dailyGoals[dateKey] = goal.goalMinutes;
       }
     }
@@ -79,19 +88,24 @@ class _GoalAchievementDetailScreenState extends State<GoalAchievementDetailScree
     for (var dateKey in dailyGoals.keys) {
       final studiedMinutes = dailyMinutes[dateKey] ?? 0;
       final goalMinutes = dailyGoals[dateKey]!;
-      
+
       totalDaysWithGoals++;
-      final achievementRate = (studiedMinutes / goalMinutes * 100).clamp(0.0, 100.0);
+      final achievementRate = (studiedMinutes / goalMinutes * 100).clamp(
+        0.0,
+        100.0,
+      );
       achievementRates.add(achievementRate);
-      
+
       if (studiedMinutes >= goalMinutes) {
         achievedDays++;
       }
     }
 
-    final averageAchievement = achievementRates.isEmpty 
-        ? 0.0 
-        : achievementRates.reduce((a, b) => a + b) / achievementRates.length;
+    final averageAchievement =
+        achievementRates.isEmpty
+            ? 0.0
+            : achievementRates.reduce((a, b) => a + b) /
+                achievementRates.length;
 
     return {
       'averageAchievement': averageAchievement,
@@ -137,9 +151,9 @@ class _GoalAchievementDetailScreenState extends State<GoalAchievementDetailScree
                 const SizedBox(width: 12),
                 Text(
                   '전체 목표 달성률',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -171,14 +185,18 @@ class _GoalAchievementDetailScreenState extends State<GoalAchievementDetailScree
                 value: achievedDays / totalDaysWithGoals,
                 backgroundColor: Colors.grey.withValues(alpha: 0.3),
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  achievedDays / totalDaysWithGoals >= 0.7 ? Colors.green : Colors.orange,
+                  achievedDays / totalDaysWithGoals >= 0.7
+                      ? Colors.green
+                      : Colors.orange,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 '${(achievedDays / totalDaysWithGoals * 100).toStringAsFixed(1)}% 달성',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -188,15 +206,18 @@ class _GoalAchievementDetailScreenState extends State<GoalAchievementDetailScree
     );
   }
 
-  Widget _buildStatItem(String title, String value, IconData icon, Color color) {
+  Widget _buildStatItem(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -213,7 +234,9 @@ class _GoalAchievementDetailScreenState extends State<GoalAchievementDetailScree
           Text(
             title,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -229,19 +252,21 @@ class _GoalAchievementDetailScreenState extends State<GoalAchievementDetailScree
     final List<Map<String, dynamic>> recentDays = [];
     for (int i = 6; i >= 0; i--) {
       final date = DateTime.now().subtract(Duration(days: i));
-      final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-      
+      final dateKey =
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
       final studiedMinutes = dailyMinutes[dateKey] ?? 0;
       final goalMinutes = dailyGoals[dateKey];
-      
+
       recentDays.add({
         'date': date,
         'dateKey': dateKey,
         'studiedMinutes': studiedMinutes,
         'goalMinutes': goalMinutes,
-        'achievementRate': goalMinutes != null && goalMinutes > 0 
-            ? (studiedMinutes / goalMinutes * 100).clamp(0, 100)
-            : null,
+        'achievementRate':
+            goalMinutes != null && goalMinutes > 0
+                ? (studiedMinutes / goalMinutes * 100).clamp(0, 100)
+                : null,
       });
     }
 
@@ -325,15 +350,15 @@ class _GoalAchievementDetailScreenState extends State<GoalAchievementDetailScree
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      goalMinutes != null 
-                          ? '목표: ${goalMinutes}분' 
-                          : '목표 없음',
+                      goalMinutes != null ? '목표: $goalMinutes분' : '목표 없음',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
                     Text(
-                      '학습: ${studiedMinutes}분',
+                      '학습: $studiedMinutes분',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w500,
                       ),
@@ -346,21 +371,22 @@ class _GoalAchievementDetailScreenState extends State<GoalAchievementDetailScree
                     value: (achievementRate / 100).clamp(0, 1),
                     backgroundColor: Colors.grey.withValues(alpha: 0.3),
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      achievementRate >= 100 
-                          ? Colors.green 
-                          : achievementRate >= 70 
-                              ? Colors.orange 
-                              : Colors.red,
+                      achievementRate >= 100
+                          ? Colors.green
+                          : achievementRate >= 70
+                          ? Colors.orange
+                          : Colors.red,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '${achievementRate.toStringAsFixed(1)}% 달성',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: achievementRate >= 100 
-                          ? Colors.green 
-                          : achievementRate >= 70 
-                              ? Colors.orange 
+                      color:
+                          achievementRate >= 100
+                              ? Colors.green
+                              : achievementRate >= 70
+                              ? Colors.orange
                               : Colors.red,
                       fontWeight: FontWeight.w500,
                     ),
@@ -407,13 +433,9 @@ class _GoalAchievementDetailScreenState extends State<GoalAchievementDetailScree
             const SizedBox(height: 16),
             Row(
               children: [
-                Expanded(
-                  child: _buildMonthCard('이번 달', thisMonth, data),
-                ),
+                Expanded(child: _buildMonthCard('이번 달', thisMonth, data)),
                 const SizedBox(width: 16),
-                Expanded(
-                  child: _buildMonthCard('지난 달', lastMonth, data),
-                ),
+                Expanded(child: _buildMonthCard('지난 달', lastMonth, data)),
               ],
             ),
           ],
@@ -422,7 +444,11 @@ class _GoalAchievementDetailScreenState extends State<GoalAchievementDetailScree
     );
   }
 
-  Widget _buildMonthCard(String title, DateTime month, Map<String, dynamic> data) {
+  Widget _buildMonthCard(
+    String title,
+    DateTime month,
+    Map<String, dynamic> data,
+  ) {
     final dailyMinutes = data['dailyMinutes'] as Map<String, int>;
     final dailyGoals = data['dailyGoals'] as Map<String, int>;
 
@@ -439,22 +465,25 @@ class _GoalAchievementDetailScreenState extends State<GoalAchievementDetailScree
       if (dateYear == month.year && dateMonth == month.month) {
         totalDaysWithGoals++;
         totalGoals += entry.value;
-        
+
         final studiedMinutes = dailyMinutes[entry.key] ?? 0;
         totalStudied += studiedMinutes;
-        
+
         if (studiedMinutes >= entry.value) {
           achievedDays++;
         }
       }
     }
 
-    final achievementRate = totalGoals > 0 ? (totalStudied / totalGoals * 100).clamp(0, 100) : 0.0;
+    final achievementRate =
+        totalGoals > 0 ? (totalStudied / totalGoals * 100).clamp(0, 100) : 0.0;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.3),
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -462,9 +491,9 @@ class _GoalAchievementDetailScreenState extends State<GoalAchievementDetailScree
         children: [
           Text(
             title,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
           if (totalDaysWithGoals > 0) ...[
@@ -478,14 +507,18 @@ class _GoalAchievementDetailScreenState extends State<GoalAchievementDetailScree
             Text(
               '$achievedDays/$totalDaysWithGoals일 달성',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.7),
               ),
             ),
           ] else ...[
             Text(
               '데이터 없음',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.5),
               ),
             ),
           ],

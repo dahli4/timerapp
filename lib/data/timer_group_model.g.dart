@@ -22,7 +22,7 @@ class TimerGroupModelAdapter extends TypeAdapter<TimerGroupModel> {
       colorHex: fields[2] as int?,
       createdAt: fields[3] as DateTime,
       modifiedAt: fields[4] as DateTime?,
-      order: fields[5] as int,
+      order: fields[5] as int?,
     );
   }
 

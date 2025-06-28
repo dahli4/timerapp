@@ -93,40 +93,96 @@ class _TimerListScreenState extends State<TimerListScreen> {
     }
   }
 
+  Future<void> _moveGroupUp(int index) async {
+    if (index <= 0) return;
 
+    final groups =
+        _groupBox.values.toList()
+          ..sort((a, b) => a.safeOrder.compareTo(b.safeOrder));
 
-  Future<void> _reorderGroups(int oldIndex, int newIndex) async {
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
+    // 위 그룹과 순서 바꾸기
+    final currentGroup = groups[index];
+    final aboveGroup = groups[index - 1];
 
-    final groups = _groupBox.values.toList()..sort((a, b) => a.order.compareTo(b.order));
-    final movedGroup = groups.removeAt(oldIndex);
-    groups.insert(newIndex, movedGroup);
+    // 순서 값 교체
+    final tempOrder = currentGroup.safeOrder;
 
-    // 모든 그룹의 순서를 업데이트
-    for (int i = 0; i < groups.length; i++) {
-      final group = groups[i];
-      final updatedGroup = TimerGroupModel(
-        id: group.id,
-        name: group.name,
-        colorHex: group.colorHex,
-        createdAt: group.createdAt,
-        modifiedAt: DateTime.now(),
-        order: i,
-      );
-      
-      // 기존 그룹 삭제하고 새로 추가
-      await group.delete();
-      await _groupBox.add(updatedGroup);
-    }
+    // 현재 그룹을 위로
+    final updatedCurrentGroup = TimerGroupModel(
+      id: currentGroup.id,
+      name: currentGroup.name,
+      colorHex: currentGroup.colorHex,
+      createdAt: currentGroup.createdAt,
+      modifiedAt: DateTime.now(),
+      order: aboveGroup.safeOrder,
+    );
+
+    // 위 그룹을 아래로
+    final updatedAboveGroup = TimerGroupModel(
+      id: aboveGroup.id,
+      name: aboveGroup.name,
+      colorHex: aboveGroup.colorHex,
+      createdAt: aboveGroup.createdAt,
+      modifiedAt: DateTime.now(),
+      order: tempOrder,
+    );
+
+    // 기존 그룹들 삭제하고 새로 추가
+    await currentGroup.delete();
+    await aboveGroup.delete();
+    await _groupBox.add(updatedCurrentGroup);
+    await _groupBox.add(updatedAboveGroup);
+
+    setState(() {});
+  }
+
+  Future<void> _moveGroupDown(int index) async {
+    final groups =
+        _groupBox.values.toList()
+          ..sort((a, b) => a.safeOrder.compareTo(b.safeOrder));
+    if (index >= groups.length - 1) return;
+
+    // 아래 그룹과 순서 바꾸기
+    final currentGroup = groups[index];
+    final belowGroup = groups[index + 1];
+
+    // 순서 값 교체
+    final tempOrder = currentGroup.safeOrder;
+
+    // 현재 그룹을 아래로
+    final updatedCurrentGroup = TimerGroupModel(
+      id: currentGroup.id,
+      name: currentGroup.name,
+      colorHex: currentGroup.colorHex,
+      createdAt: currentGroup.createdAt,
+      modifiedAt: DateTime.now(),
+      order: belowGroup.safeOrder,
+    );
+
+    // 아래 그룹을 위로
+    final updatedBelowGroup = TimerGroupModel(
+      id: belowGroup.id,
+      name: belowGroup.name,
+      colorHex: belowGroup.colorHex,
+      createdAt: belowGroup.createdAt,
+      modifiedAt: DateTime.now(),
+      order: tempOrder,
+    );
+
+    // 기존 그룹들 삭제하고 새로 추가
+    await currentGroup.delete();
+    await belowGroup.delete();
+    await _groupBox.add(updatedCurrentGroup);
+    await _groupBox.add(updatedBelowGroup);
 
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    final groups = _groupBox.values.toList()..sort((a, b) => a.order.compareTo(b.order));
+    final groups =
+        _groupBox.values.toList()
+          ..sort((a, b) => a.safeOrder.compareTo(b.safeOrder));
     final ungroupedTimers =
         _timerBox.values.where((timer) => timer.groupId == null).toList();
 
@@ -135,7 +191,8 @@ class _TimerListScreenState extends State<TimerListScreen> {
         child: Column(
           children: [
             ValueListenableBuilder(
-              valueListenable: Hive.box<StudyRecordModel>('records').listenable(),
+              valueListenable:
+                  Hive.box<StudyRecordModel>('records').listenable(),
               builder: (context, box, _) {
                 return DailyGoalCard(onTap: _showGoalDialog);
               },
@@ -164,8 +221,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                       ),
 
                     // 그룹 폴더들 (재정렬 가능)
-                    if (groups.isNotEmpty) 
-                      _buildReorderableGroups(groups),
+                    if (groups.isNotEmpty) _buildReorderableGroups(groups),
 
                     // 새 그룹 추가 카드
                     _buildAddGroupCard(),
@@ -241,6 +297,8 @@ class _TimerListScreenState extends State<TimerListScreen> {
     required String? groupId,
     TimerGroupModel? group,
     bool isReorderable = false,
+    int? groupIndex,
+    int? totalGroups,
   }) {
     return Container(
       key: key,
@@ -270,13 +328,92 @@ class _TimerListScreenState extends State<TimerListScreen> {
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                if (isReorderable)
+                if (isReorderable && groupIndex != null && totalGroups != null)
                   Container(
                     padding: const EdgeInsets.only(right: 12),
-                    child: Icon(
-                      Icons.drag_handle,
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                      size: 24,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap:
+                                groupIndex > 0
+                                    ? () => _moveGroupUp(groupIndex)
+                                    : null,
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color:
+                                      groupIndex > 0
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .outline
+                                              .withValues(alpha: 0.3)
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .outline
+                                              .withValues(alpha: 0.1),
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.keyboard_arrow_up,
+                                color:
+                                    groupIndex > 0
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withValues(alpha: 0.3),
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap:
+                                groupIndex < totalGroups - 1
+                                    ? () => _moveGroupDown(groupIndex)
+                                    : null,
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color:
+                                      groupIndex < totalGroups - 1
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .outline
+                                              .withValues(alpha: 0.3)
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .outline
+                                              .withValues(alpha: 0.1),
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.keyboard_arrow_down,
+                                color:
+                                    groupIndex < totalGroups - 1
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withValues(alpha: 0.3),
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 Container(
@@ -841,17 +978,17 @@ class _TimerListScreenState extends State<TimerListScreen> {
   }
 
   Widget _buildReorderableGroups(List<TimerGroupModel> groups) {
-    return ReorderableListView.builder(
+    return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      onReorder: _reorderGroups,
       itemCount: groups.length,
       itemBuilder: (context, index) {
         final group = groups[index];
-        final groupTimers = _timerBox.values
-            .where((timer) => timer.groupId == group.id)
-            .toList();
-        
+        final groupTimers =
+            _timerBox.values
+                .where((timer) => timer.groupId == group.id)
+                .toList();
+
         return _buildGroupCard(
           key: ValueKey(group.id),
           title: group.name,
@@ -861,6 +998,8 @@ class _TimerListScreenState extends State<TimerListScreen> {
           groupId: group.id,
           group: group,
           isReorderable: true,
+          groupIndex: index,
+          totalGroups: groups.length,
         );
       },
     );

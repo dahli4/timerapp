@@ -20,7 +20,7 @@ class TimerGroupModel extends HiveObject {
   final DateTime? modifiedAt;
 
   @HiveField(5)
-  final int order;
+  final int? order;
 
   TimerGroupModel({
     required this.id,
@@ -28,6 +28,9 @@ class TimerGroupModel extends HiveObject {
     this.colorHex,
     required this.createdAt,
     this.modifiedAt,
-    this.order = 0,
+    this.order,
   });
+
+  // order 값을 안전하게 가져오는 getter
+  int get safeOrder => order ?? 0;
 }
