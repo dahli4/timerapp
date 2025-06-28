@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../data/study_record_model.dart';
 import '../../data/study_timer_model.dart';
+import '../../utils/daily_goal_service.dart';
 import 'subject_detail_screen.dart';
 import 'all_subjects_stats_screen.dart';
+import 'goal_achievement_detail_screen.dart';
 
 class StatsScreen extends StatefulWidget {
   const StatsScreen({super.key});
@@ -25,23 +27,11 @@ class _StatsScreenState extends State<StatsScreen> {
     totalMinutes += totalSeconds ~/ 60;
     totalSeconds = totalSeconds % 60;
 
-    // 오늘 공부 시간
-    final now = DateTime.now();
-    final todayRecords = records.where(
-      (r) =>
-          r.date.year == now.year &&
-          r.date.month == now.month &&
-          r.date.day == now.day,
-    );
-    int todayMinutes = todayRecords.fold(0, (sum, r) => sum + r.minutes);
-    int todaySeconds = todayRecords.fold(0, (sum, r) => sum + r.seconds);
-    todayMinutes += todaySeconds ~/ 60;
-    todaySeconds = todaySeconds % 60;
-
     // 연속 학습일 계산
     int currentStreak = _calculateCurrentStreak(records);
 
     // 이번 달 공부 시간
+    final now = DateTime.now();
     final thisMonthRecords = records.where(
       (r) => r.date.year == now.year && r.date.month == now.month,
     );
@@ -133,9 +123,13 @@ class _StatsScreenState extends State<StatsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 첫 번째 줄: 총 학습시간 + 오늘 학습시간
+              // 첫 번째 줄: 최고 기록 + 총 학습시간
               Row(
                 children: [
+                  Expanded(
+                    child: _buildBestDayStatCard(bestDay, bestMinutes, bestSeconds),
+                  ),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: _buildStatCard(
                       icon: Icons.timer,
@@ -146,19 +140,6 @@ class _StatsScreenState extends State<StatsScreen> {
                               : '$totalMinutes분',
                       subtitle: '${records.length}개 세션',
                       color: Colors.blue,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildStatCard(
-                      icon: Icons.today,
-                      title: '오늘 학습',
-                      value:
-                          todayMinutes >= 60
-                              ? '${todayMinutes ~/ 60}시간 ${todayMinutes % 60}분'
-                              : '$todayMinutes분',
-                      subtitle: todayMinutes > 0 ? '계속 화이팅!' : '시작해볼까요?',
-                      color: Colors.green,
                     ),
                   ),
                 ],
@@ -207,12 +188,26 @@ class _StatsScreenState extends State<StatsScreen> {
               _buildWeeklyChartCard(last7Days, last7Minutes),
               const SizedBox(height: 20),
 
-              // 최고 기록 카드
-              _buildBestDayCard(bestDay, bestMinutes, bestSeconds),
+              // 목표 달성률 개별 카드 (임시로 숨김)
+              // _buildGoalAchievementCard(records),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildBestDayStatCard(String bestDay, int bestMinutes, int bestSeconds) {
+    return _buildStatCard(
+      icon: Icons.star_outlined,
+      title: '최고 기록',
+      value: bestDay.isNotEmpty 
+          ? (bestMinutes >= 60 
+              ? '${bestMinutes ~/ 60}시간 ${bestMinutes % 60}분'
+              : '${bestMinutes}분')
+          : '기록 없음',
+      subtitle: bestDay.isNotEmpty ? bestDay.replaceAll('-', '/') : '시작해보세요!',
+      color: Colors.amber,
     );
   }
 
@@ -591,83 +586,6 @@ class _StatsScreenState extends State<StatsScreen> {
     );
   }
 
-  Widget _buildBestDayCard(String bestDay, int bestMinutes, int bestSeconds) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color:
-          Theme.of(context).brightness == Brightness.light
-              ? Colors.white
-              : null,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: [
-              Colors.amber.withValues(alpha: 0.03),
-              Colors.amber.withValues(alpha: 0.08),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.amber.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.star_outlined,
-                color: Colors.amber.shade700,
-                size: 28,
-              ),
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '최고 기록',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.7),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    bestDay.isNotEmpty ? bestDay : '아직 기록 없음',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                  if (bestDay.isNotEmpty)
-                    Text(
-                      '${bestMinutes ~/ 60}시간 ${bestMinutes % 60}분',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.amber.shade700,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // 연속 학습일 계산
   int _calculateCurrentStreak(List<StudyRecordModel> records) {
     if (records.isEmpty) return 0;
@@ -778,6 +696,191 @@ class _StatsScreenState extends State<StatsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildGoalAchievementCard(List<StudyRecordModel> records) {
+    final goalService = DailyGoalService();
+
+    // 최근 7일 목표 달성률 계산
+    int achievedDays = 0;
+    int totalDaysWithGoals = 0;
+    double totalAchievementRate = 0.0;
+
+    for (int i = 0; i < 7; i++) {
+      final date = DateTime.now().subtract(Duration(days: i));
+      final goal = goalService.getGoalForDate(date);
+      
+      if (goal != null) {
+        totalDaysWithGoals++;
+        final dayRecords = records.where((r) => 
+          r.date.year == date.year && 
+          r.date.month == date.month && 
+          r.date.day == date.day
+        );
+        
+        int dayMinutes = dayRecords.fold(0, (sum, r) => sum + r.minutes);
+        dayMinutes += dayRecords.fold(0, (sum, r) => sum + r.seconds) ~/ 60;
+        
+        final achievementRate = (dayMinutes / goal.goalMinutes * 100).clamp(0.0, 100.0);
+        totalAchievementRate += achievementRate;
+        
+        if (dayMinutes >= goal.goalMinutes) {
+          achievedDays++;
+        }
+      }
+    }
+
+    final averageAchievement = totalDaysWithGoals > 0 
+        ? totalAchievementRate / totalDaysWithGoals 
+        : 0.0;
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const GoalAchievementDetailScreen(),
+          ),
+        );
+      },
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        color: Theme.of(context).brightness == Brightness.light ? Colors.white : null,
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              colors: [
+                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.03),
+                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.08),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.track_changes,
+                      color: Theme.of(context).colorScheme.secondary,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '목표 달성률',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          '최근 7일 평균',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              if (totalDaysWithGoals > 0) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${averageAchievement.toStringAsFixed(1)}%',
+                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: averageAchievement >= 80 
+                                  ? Colors.green 
+                                  : averageAchievement >= 60 
+                                      ? Colors.orange 
+                                      : Colors.red,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '$achievedDays/$totalDaysWithGoals일 달성',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      width: 60,
+                      height: 60,
+                      child: CircularProgressIndicator(
+                        value: averageAchievement / 100,
+                        backgroundColor: Colors.grey.withValues(alpha: 0.3),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          averageAchievement >= 80 
+                              ? Colors.green 
+                              : averageAchievement >= 60 
+                                  ? Colors.orange 
+                                  : Colors.red,
+                        ),
+                        strokeWidth: 6,
+                      ),
+                    ),
+                  ],
+                ),
+              ] else ...[
+                Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.flag_outlined,
+                        size: 48,
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        '목표를 설정해보세요',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                        ),
+                      ),
+                      Text(
+                        '하단 목표 설정 카드를 터치하세요',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }

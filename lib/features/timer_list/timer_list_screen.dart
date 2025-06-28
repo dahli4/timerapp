@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../data/study_timer_model.dart';
 import '../../data/timer_group_model.dart';
+import '../../data/study_record_model.dart';
 import '../../widgets/daily_goal_dialog.dart';
 import '../../widgets/group_management_dialog.dart';
+
 import '../../utils/daily_goal_service.dart';
 import 'timer_list_dialogs.dart';
 import 'group_timers_screen.dart';
@@ -91,9 +93,40 @@ class _TimerListScreenState extends State<TimerListScreen> {
     }
   }
 
+
+
+  Future<void> _reorderGroups(int oldIndex, int newIndex) async {
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+
+    final groups = _groupBox.values.toList()..sort((a, b) => a.order.compareTo(b.order));
+    final movedGroup = groups.removeAt(oldIndex);
+    groups.insert(newIndex, movedGroup);
+
+    // 모든 그룹의 순서를 업데이트
+    for (int i = 0; i < groups.length; i++) {
+      final group = groups[i];
+      final updatedGroup = TimerGroupModel(
+        id: group.id,
+        name: group.name,
+        colorHex: group.colorHex,
+        createdAt: group.createdAt,
+        modifiedAt: DateTime.now(),
+        order: i,
+      );
+      
+      // 기존 그룹 삭제하고 새로 추가
+      await group.delete();
+      await _groupBox.add(updatedGroup);
+    }
+
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
-    final groups = _groupBox.values.toList();
+    final groups = _groupBox.values.toList()..sort((a, b) => a.order.compareTo(b.order));
     final ungroupedTimers =
         _timerBox.values.where((timer) => timer.groupId == null).toList();
 
@@ -101,7 +134,12 @@ class _TimerListScreenState extends State<TimerListScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            DailyGoalCard(onTap: _showGoalDialog),
+            ValueListenableBuilder(
+              valueListenable: Hive.box<StudyRecordModel>('records').listenable(),
+              builder: (context, box, _) {
+                return DailyGoalCard(onTap: _showGoalDialog);
+              },
+            ),
 
             Expanded(
               child: Padding(
@@ -125,24 +163,9 @@ class _TimerListScreenState extends State<TimerListScreen> {
                         groupId: null,
                       ),
 
-                    // 그룹 폴더들
-                    ...groups.map((group) {
-                      final groupTimers =
-                          _timerBox.values
-                              .where((timer) => timer.groupId == group.id)
-                              .toList();
-                      return _buildGroupCard(
-                        title: group.name,
-                        icon: Icons.folder,
-                        color:
-                            group.colorHex != null
-                                ? Color(group.colorHex!)
-                                : Colors.blue,
-                        timerCount: groupTimers.length,
-                        groupId: group.id,
-                        group: group,
-                      );
-                    }),
+                    // 그룹 폴더들 (재정렬 가능)
+                    if (groups.isNotEmpty) 
+                      _buildReorderableGroups(groups),
 
                     // 새 그룹 추가 카드
                     _buildAddGroupCard(),
@@ -210,14 +233,17 @@ class _TimerListScreenState extends State<TimerListScreen> {
   }
 
   Widget _buildGroupCard({
+    Key? key,
     required String title,
     required IconData icon,
     required Color color,
     required int timerCount,
     required String? groupId,
     TimerGroupModel? group,
+    bool isReorderable = false,
   }) {
     return Container(
+      key: key,
       margin: const EdgeInsets.only(bottom: 12),
       child: Material(
         color: Theme.of(context).colorScheme.surface,
@@ -244,6 +270,15 @@ class _TimerListScreenState extends State<TimerListScreen> {
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
+                if (isReorderable)
+                  Container(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: Icon(
+                      Icons.drag_handle,
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                      size: 24,
+                    ),
+                  ),
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -804,6 +839,32 @@ class _TimerListScreenState extends State<TimerListScreen> {
       }
     }
   }
+
+  Widget _buildReorderableGroups(List<TimerGroupModel> groups) {
+    return ReorderableListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      onReorder: _reorderGroups,
+      itemCount: groups.length,
+      itemBuilder: (context, index) {
+        final group = groups[index];
+        final groupTimers = _timerBox.values
+            .where((timer) => timer.groupId == group.id)
+            .toList();
+        
+        return _buildGroupCard(
+          key: ValueKey(group.id),
+          title: group.name,
+          icon: Icons.folder,
+          color: group.colorHex != null ? Color(group.colorHex!) : Colors.blue,
+          timerCount: groupTimers.length,
+          groupId: group.id,
+          group: group,
+          isReorderable: true,
+        );
+      },
+    );
+  }
 }
 
 // DailyGoalCard 위젯을 직접 정의
@@ -821,13 +882,18 @@ class _DailyGoalCardState extends State<DailyGoalCard> {
 
   @override
   Widget build(BuildContext context) {
-    final progressInfo = _goalService.getTodayProgressInfo();
+    return ValueListenableBuilder(
+      valueListenable: Hive.box<StudyRecordModel>('records').listenable(),
+      builder: (context, Box<StudyRecordModel> box, child) {
+        final progressInfo = _goalService.getTodayProgressInfo();
 
-    if (!progressInfo.isGoalSet) {
-      return _buildNoGoalCard();
-    }
+        if (!progressInfo.isGoalSet) {
+          return _buildNoGoalCard();
+        }
 
-    return _buildProgressCard(progressInfo);
+        return _buildProgressCard(progressInfo);
+      },
+    );
   }
 
   Widget _buildNoGoalCard() {

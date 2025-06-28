@@ -3,7 +3,7 @@ description: "모딧 - 집중타이머 & 학습관리: 집중력 향상을 위�
 
 publish_to: 'none' 
 
-version: 1.1.0+6
+version: 1.1.1
 
 environment:
   sdk: ^3.7.2

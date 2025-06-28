@@ -23,8 +23,6 @@ class StudyTimerModelAdapter extends TypeAdapter<StudyTimerModel> {
       createdAt: fields[3] as DateTime,
       colorHex: fields[4] as int?,
       groupId: fields[5] as String?,
-      isInfinite: fields[6] as bool? ?? false,
-      isFavorite: fields[7] as bool? ?? false,
     );
   }
 
