@@ -48,10 +48,11 @@ void main() async {
 // 타이머 데이터 마이그레이션 함수 (무제한 타이머 호환성 수정)
 Future<void> _migrateTimerData() async {
   try {
+    // 타이머 마이그레이션
     final timerBox = Hive.box<StudyTimerModel>('timers');
     final timers = timerBox.values.toList();
 
-    bool needsMigration = false;
+    bool timerNeedsMigration = false;
     final migratedTimers = <StudyTimerModel>[];
 
     for (final timer in timers) {
@@ -62,7 +63,7 @@ Future<void> _migrateTimerData() async {
       if (timer.isInfinite && timer.durationMinutes != 0) {
         final migratedTimer = timer.copyWith(durationMinutes: 0);
         migratedTimers.add(migratedTimer);
-        needsMigration = true;
+        timerNeedsMigration = true;
       }
       // 일반 타이머인데 durationMinutes가 0인 경우 (잘못된 데이터)
       else if (!timer.isInfinite && timer.durationMinutes == 0) {
@@ -76,28 +77,63 @@ Future<void> _migrateTimerData() async {
             durationMinutes: 0,
           );
           migratedTimers.add(migratedTimer);
-          needsMigration = true;
+          timerNeedsMigration = true;
         } else {
           // 그렇지 않으면 기본값 25분으로 설정
           final migratedTimer = timer.copyWith(durationMinutes: 25);
           migratedTimers.add(migratedTimer);
-          needsMigration = true;
+          timerNeedsMigration = true;
         }
       } else {
         migratedTimers.add(timer);
       }
     }
 
-    // 마이그레이션이 필요한 경우 데이터 업데이트
-    if (needsMigration) {
+    // 타이머 마이그레이션이 필요한 경우 데이터 업데이트
+    if (timerNeedsMigration) {
       await timerBox.clear();
       for (final timer in migratedTimers) {
         await timerBox.add(timer);
       }
       debugPrint('타이머 데이터 마이그레이션 완료: ${migratedTimers.length}개 타이머 처리');
     }
+
+    // 그룹 order 마이그레이션
+    final groupBox = Hive.box<TimerGroupModel>('groups');
+    final groups = groupBox.values.toList();
+
+    bool groupNeedsMigration = false;
+    final migratedGroups = <TimerGroupModel>[];
+
+    for (int i = 0; i < groups.length; i++) {
+      final group = groups[i];
+      // order가 null인 경우 인덱스를 order로 설정
+      if (group.order == null) {
+        final migratedGroup = TimerGroupModel(
+          id: group.id,
+          name: group.name,
+          colorHex: group.colorHex,
+          createdAt: group.createdAt,
+          modifiedAt: group.modifiedAt,
+          order: i,
+        );
+        migratedGroups.add(migratedGroup);
+        groupNeedsMigration = true;
+      } else {
+        migratedGroups.add(group);
+      }
+    }
+
+    // 그룹 마이그레이션이 필요한 경우 데이터 업데이트
+    if (groupNeedsMigration) {
+      await groupBox.clear();
+      for (final group in migratedGroups) {
+        await groupBox.add(group);
+      }
+      debugPrint('그룹 order 마이그레이션 완료: ${migratedGroups.length}개 그룹 처리');
+    }
   } catch (e) {
-    debugPrint('타이머 데이터 마이그레이션 오류: $e');
+    debugPrint('데이터 마이그레이션 오류: $e');
   }
 }
 

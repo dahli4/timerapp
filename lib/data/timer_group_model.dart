@@ -19,11 +19,18 @@ class TimerGroupModel extends HiveObject {
   @HiveField(4)
   final DateTime? modifiedAt;
 
+  @HiveField(5)
+  final int? order;
+
   TimerGroupModel({
     required this.id,
     required this.name,
     this.colorHex,
     required this.createdAt,
     this.modifiedAt,
+    this.order,
   });
+
+  // order 값을 안전하게 가져오는 getter
+  int get safeOrder => order ?? 0;
 }

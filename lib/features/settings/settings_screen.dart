@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../data/study_record_model.dart';
 import '../../data/study_timer_model.dart';
+import '../../utils/review_service.dart';
 import '../../main.dart'; // themeNotifier를 import
 
 class SettingsScreen extends StatefulWidget {
@@ -130,6 +131,73 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  void _shareStudyRecord() async {
+    final recordBox = Hive.box<StudyRecordModel>('records');
+    final records = recordBox.values.toList();
+
+    if (records.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('공유할 기록이 없습니다.')));
+      return;
+    }
+
+    // 총 학습 시간 계산
+    int totalMinutes = records.fold(0, (sum, r) => sum + r.minutes);
+    int totalSeconds = records.fold(0, (sum, r) => sum + r.seconds);
+    totalMinutes += totalSeconds ~/ 60;
+
+    final totalHours = totalMinutes ~/ 60;
+    final remainingMinutes = totalMinutes % 60;
+
+    // 연속 학습일 계산
+    final streakDays = _calculateCurrentStreak(records);
+
+    // 오늘 학습 시간 계산
+    final now = DateTime.now();
+    final todayRecords = records.where(
+      (r) =>
+          r.date.year == now.year &&
+          r.date.month == now.month &&
+          r.date.day == now.day,
+    );
+    int todayMinutes = todayRecords.fold(0, (sum, r) => sum + r.minutes);
+    todayMinutes += todayRecords.fold(0, (sum, r) => sum + r.seconds) ~/ 60;
+
+    await ReviewService.shareStudyRecord(
+      totalHours: totalHours,
+      totalMinutes: remainingMinutes,
+      streakDays: streakDays,
+      todayMinutes: todayMinutes,
+    );
+  }
+
+  int _calculateCurrentStreak(List<StudyRecordModel> records) {
+    if (records.isEmpty) return 0;
+
+    final now = DateTime.now();
+    final sortedDates =
+        records
+            .map((r) => DateTime(r.date.year, r.date.month, r.date.day))
+            .toSet()
+            .toList()
+          ..sort((a, b) => b.compareTo(a));
+
+    int streak = 0;
+    DateTime checkDate = DateTime(now.year, now.month, now.day);
+
+    for (final date in sortedDates) {
+      if (date.isAtSameMomentAs(checkDate)) {
+        streak++;
+        checkDate = checkDate.subtract(const Duration(days: 1));
+      } else if (date.isBefore(checkDate)) {
+        break;
+      }
+    }
+
+    return streak;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -174,6 +242,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle: const Text('삭제된 타이머의 학습 기록을 정리합니다'),
                     onTap: () => _showCleanupDialog(context),
                   ),
+                  ListTile(
+                    leading: const Icon(Icons.share),
+                    title: const Text('학습 기록 공유'),
+                    subtitle: const Text('나의 공부 기록을 친구들과 공유해보세요'),
+                    onTap: _shareStudyRecord,
+                  ),
                   const Divider(),
                 ],
               ),
@@ -183,7 +257,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: ListTile(
                 leading: const Icon(Icons.info_outline),
                 title: const Text('앱 버전'),
-                subtitle: const Text('v1.1.0'),
+                subtitle: const Text('v1.1.1'),
                 enabled: false,
               ),
             ),

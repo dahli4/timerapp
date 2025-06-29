@@ -7,6 +7,7 @@ import '../../data/study_record_model.dart';
 import '../../utils/notification_helper.dart';
 import '../../utils/background_notification_helper.dart';
 import '../../utils/sound_helper.dart';
+import '../../utils/review_service.dart';
 import 'package:intl/intl.dart';
 
 class TimerRunScreen extends StatefulWidget {
@@ -161,6 +162,19 @@ class _TimerRunScreenState extends State<TimerRunScreen>
 
     _hasRecordSaved = true; // 저장 완료 플래그 설정
     debugPrint('기록 저장: $minutesToSave분 $secondsToSave초');
+
+    // 타이머 완료 카운트 증가 및 리뷰 요청
+    await ReviewService.incrementCompletedTimers();
+
+    // 타이머가 완전히 완료된 경우에만 리뷰 요청
+    if (_elapsedSeconds >= _totalSeconds && mounted) {
+      // 약간의 지연 후 리뷰 요청 (완료 애니메이션 후)
+      Future.delayed(const Duration(milliseconds: 1500), () {
+        if (mounted) {
+          ReviewService.showReviewDialog(context);
+        }
+      });
+    }
   }
 
   Future<void> _toggleFavorite() async {

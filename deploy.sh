@@ -145,7 +145,16 @@ case $PLATFORM in
         case $LANE in
             beta)
                 echo "🧪 Google Play 내부 테스트 배포..."
-                fastlane beta
+                if [ "$VERSION_BUMP" = "patch" ]; then
+                    echo "📈 패치 버전 업데이트 포함"
+                    fastlane beta_patch || { echo "❌ Google Play 베타 배포 (패치) 실패"; exit 1; }
+                elif [ "$VERSION_BUMP" = "minor" ]; then
+                    echo "📈 마이너 버전 업데이트 포함 (1.0.1 → 1.1.0)"
+                    fastlane beta_minor || { echo "❌ Google Play 베타 배포 (마이너) 실패"; exit 1; }
+                else
+                    echo "🔢 현재 버전으로 빌드"
+                    fastlane beta || { echo "❌ Google Play 베타 배포 실패"; exit 1; }
+                fi
                 ;;
             release)
                 echo "🚀 Google Play Store 배포..."

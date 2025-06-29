@@ -62,3 +62,15 @@ key.properties
 .env.production
 !.env.example
 secrets/
+
+# 빌드 결과물 (배포 아티팩트)
+*.ipa
+*.app.dSYM.zip
+*.xcarchive
+**/Runner.xcarchive/
+**/build/ios/
+**/build/android/
+
+# macOS 시스템 파일
+.DS_Store
+**/.DS_Store
