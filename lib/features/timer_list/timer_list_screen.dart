@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../data/study_timer_model.dart';
 import '../../data/timer_group_model.dart';
+import '../../data/study_record_model.dart';
 import '../../widgets/daily_goal_dialog.dart';
 import '../../widgets/group_management_dialog.dart';
+
 import '../../utils/daily_goal_service.dart';
 import 'timer_list_dialogs.dart';
 import 'group_timers_screen.dart';
@@ -91,9 +93,96 @@ class _TimerListScreenState extends State<TimerListScreen> {
     }
   }
 
+  Future<void> _moveGroupUp(int index) async {
+    if (index <= 0) return;
+
+    final groups =
+        _groupBox.values.toList()
+          ..sort((a, b) => a.safeOrder.compareTo(b.safeOrder));
+
+    // 위 그룹과 순서 바꾸기
+    final currentGroup = groups[index];
+    final aboveGroup = groups[index - 1];
+
+    // 순서 값 교체
+    final tempOrder = currentGroup.safeOrder;
+
+    // 현재 그룹을 위로
+    final updatedCurrentGroup = TimerGroupModel(
+      id: currentGroup.id,
+      name: currentGroup.name,
+      colorHex: currentGroup.colorHex,
+      createdAt: currentGroup.createdAt,
+      modifiedAt: DateTime.now(),
+      order: aboveGroup.safeOrder,
+    );
+
+    // 위 그룹을 아래로
+    final updatedAboveGroup = TimerGroupModel(
+      id: aboveGroup.id,
+      name: aboveGroup.name,
+      colorHex: aboveGroup.colorHex,
+      createdAt: aboveGroup.createdAt,
+      modifiedAt: DateTime.now(),
+      order: tempOrder,
+    );
+
+    // 기존 그룹들 삭제하고 새로 추가
+    await currentGroup.delete();
+    await aboveGroup.delete();
+    await _groupBox.add(updatedCurrentGroup);
+    await _groupBox.add(updatedAboveGroup);
+
+    setState(() {});
+  }
+
+  Future<void> _moveGroupDown(int index) async {
+    final groups =
+        _groupBox.values.toList()
+          ..sort((a, b) => a.safeOrder.compareTo(b.safeOrder));
+    if (index >= groups.length - 1) return;
+
+    // 아래 그룹과 순서 바꾸기
+    final currentGroup = groups[index];
+    final belowGroup = groups[index + 1];
+
+    // 순서 값 교체
+    final tempOrder = currentGroup.safeOrder;
+
+    // 현재 그룹을 아래로
+    final updatedCurrentGroup = TimerGroupModel(
+      id: currentGroup.id,
+      name: currentGroup.name,
+      colorHex: currentGroup.colorHex,
+      createdAt: currentGroup.createdAt,
+      modifiedAt: DateTime.now(),
+      order: belowGroup.safeOrder,
+    );
+
+    // 아래 그룹을 위로
+    final updatedBelowGroup = TimerGroupModel(
+      id: belowGroup.id,
+      name: belowGroup.name,
+      colorHex: belowGroup.colorHex,
+      createdAt: belowGroup.createdAt,
+      modifiedAt: DateTime.now(),
+      order: tempOrder,
+    );
+
+    // 기존 그룹들 삭제하고 새로 추가
+    await currentGroup.delete();
+    await belowGroup.delete();
+    await _groupBox.add(updatedCurrentGroup);
+    await _groupBox.add(updatedBelowGroup);
+
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
-    final groups = _groupBox.values.toList();
+    final groups =
+        _groupBox.values.toList()
+          ..sort((a, b) => a.safeOrder.compareTo(b.safeOrder));
     final ungroupedTimers =
         _timerBox.values.where((timer) => timer.groupId == null).toList();
 
@@ -101,7 +190,13 @@ class _TimerListScreenState extends State<TimerListScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            DailyGoalCard(onTap: _showGoalDialog),
+            ValueListenableBuilder(
+              valueListenable:
+                  Hive.box<StudyRecordModel>('records').listenable(),
+              builder: (context, box, _) {
+                return DailyGoalCard(onTap: _showGoalDialog);
+              },
+            ),
 
             Expanded(
               child: Padding(
@@ -125,24 +220,8 @@ class _TimerListScreenState extends State<TimerListScreen> {
                         groupId: null,
                       ),
 
-                    // 그룹 폴더들
-                    ...groups.map((group) {
-                      final groupTimers =
-                          _timerBox.values
-                              .where((timer) => timer.groupId == group.id)
-                              .toList();
-                      return _buildGroupCard(
-                        title: group.name,
-                        icon: Icons.folder,
-                        color:
-                            group.colorHex != null
-                                ? Color(group.colorHex!)
-                                : Colors.blue,
-                        timerCount: groupTimers.length,
-                        groupId: group.id,
-                        group: group,
-                      );
-                    }),
+                    // 그룹 폴더들 (재정렬 가능)
+                    if (groups.isNotEmpty) _buildReorderableGroups(groups),
 
                     // 새 그룹 추가 카드
                     _buildAddGroupCard(),
@@ -210,14 +289,19 @@ class _TimerListScreenState extends State<TimerListScreen> {
   }
 
   Widget _buildGroupCard({
+    Key? key,
     required String title,
     required IconData icon,
     required Color color,
     required int timerCount,
     required String? groupId,
     TimerGroupModel? group,
+    bool isReorderable = false,
+    int? groupIndex,
+    int? totalGroups,
   }) {
     return Container(
+      key: key,
       margin: const EdgeInsets.only(bottom: 12),
       child: Material(
         color: Theme.of(context).colorScheme.surface,
@@ -244,6 +328,94 @@ class _TimerListScreenState extends State<TimerListScreen> {
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
+                if (isReorderable && groupIndex != null && totalGroups != null)
+                  Container(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap:
+                                groupIndex > 0
+                                    ? () => _moveGroupUp(groupIndex)
+                                    : null,
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color:
+                                      groupIndex > 0
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .outline
+                                              .withValues(alpha: 0.3)
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .outline
+                                              .withValues(alpha: 0.1),
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.keyboard_arrow_up,
+                                color:
+                                    groupIndex > 0
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withValues(alpha: 0.3),
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap:
+                                groupIndex < totalGroups - 1
+                                    ? () => _moveGroupDown(groupIndex)
+                                    : null,
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color:
+                                      groupIndex < totalGroups - 1
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .outline
+                                              .withValues(alpha: 0.3)
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .outline
+                                              .withValues(alpha: 0.1),
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.keyboard_arrow_down,
+                                color:
+                                    groupIndex < totalGroups - 1
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withValues(alpha: 0.3),
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -804,6 +976,34 @@ class _TimerListScreenState extends State<TimerListScreen> {
       }
     }
   }
+
+  Widget _buildReorderableGroups(List<TimerGroupModel> groups) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: groups.length,
+      itemBuilder: (context, index) {
+        final group = groups[index];
+        final groupTimers =
+            _timerBox.values
+                .where((timer) => timer.groupId == group.id)
+                .toList();
+
+        return _buildGroupCard(
+          key: ValueKey(group.id),
+          title: group.name,
+          icon: Icons.folder,
+          color: group.colorHex != null ? Color(group.colorHex!) : Colors.blue,
+          timerCount: groupTimers.length,
+          groupId: group.id,
+          group: group,
+          isReorderable: true,
+          groupIndex: index,
+          totalGroups: groups.length,
+        );
+      },
+    );
+  }
 }
 
 // DailyGoalCard 위젯을 직접 정의
@@ -821,13 +1021,18 @@ class _DailyGoalCardState extends State<DailyGoalCard> {
 
   @override
   Widget build(BuildContext context) {
-    final progressInfo = _goalService.getTodayProgressInfo();
+    return ValueListenableBuilder(
+      valueListenable: Hive.box<StudyRecordModel>('records').listenable(),
+      builder: (context, Box<StudyRecordModel> box, child) {
+        final progressInfo = _goalService.getTodayProgressInfo();
 
-    if (!progressInfo.isGoalSet) {
-      return _buildNoGoalCard();
-    }
+        if (!progressInfo.isGoalSet) {
+          return _buildNoGoalCard();
+        }
 
-    return _buildProgressCard(progressInfo);
+        return _buildProgressCard(progressInfo);
+      },
+    );
   }
 
   Widget _buildNoGoalCard() {

@@ -25,8 +25,13 @@ class _StatsScreenState extends State<StatsScreen> {
     totalMinutes += totalSeconds ~/ 60;
     totalSeconds = totalSeconds % 60;
 
-    // 오늘 공부 시간
+    // 연속 학습일 계산
+    int currentStreak = _calculateCurrentStreak(records);
+
+    // 현재 시간
     final now = DateTime.now();
+
+    // 오늘 공부 시간 계산
     final todayRecords = records.where(
       (r) =>
           r.date.year == now.year &&
@@ -37,9 +42,6 @@ class _StatsScreenState extends State<StatsScreen> {
     int todaySeconds = todayRecords.fold(0, (sum, r) => sum + r.seconds);
     todayMinutes += todaySeconds ~/ 60;
     todaySeconds = todaySeconds % 60;
-
-    // 연속 학습일 계산
-    int currentStreak = _calculateCurrentStreak(records);
 
     // 이번 달 공부 시간
     final thisMonthRecords = records.where(
@@ -133,7 +135,7 @@ class _StatsScreenState extends State<StatsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 첫 번째 줄: 총 학습시간 + 오늘 학습시간
+              // 첫 번째 줄: 총 학습시간 + 오늘 공부
               Row(
                 children: [
                   Expanded(
@@ -207,10 +209,91 @@ class _StatsScreenState extends State<StatsScreen> {
               _buildWeeklyChartCard(last7Days, last7Minutes),
               const SizedBox(height: 20),
 
-              // 최고 기록 카드
+              // 최고 기록 카드 (독립)
               _buildBestDayCard(bestDay, bestMinutes, bestSeconds),
+              const SizedBox(height: 20),
+
+              // 목표 달성률 개별 카드 (임시로 숨김)
+              // _buildGoalAchievementCard(records),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBestDayCard(String bestDay, int bestMinutes, int bestSeconds) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color:
+          Theme.of(context).brightness == Brightness.light
+              ? Colors.white
+              : null,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [
+              Colors.amber.withValues(alpha: 0.03),
+              Colors.amber.withValues(alpha: 0.08),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.amber.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.star_outlined,
+                color: Colors.amber.shade700,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '최고 기록',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.7),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    bestDay.isNotEmpty ? bestDay : '아직 기록 없음',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  if (bestDay.isNotEmpty)
+                    Text(
+                      '${bestMinutes ~/ 60}시간 ${bestMinutes % 60}분',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.amber.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -583,83 +666,6 @@ class _StatsScreenState extends State<StatsScreen> {
                     ),
                   );
                 }),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBestDayCard(String bestDay, int bestMinutes, int bestSeconds) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color:
-          Theme.of(context).brightness == Brightness.light
-              ? Colors.white
-              : null,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: [
-              Colors.amber.withValues(alpha: 0.03),
-              Colors.amber.withValues(alpha: 0.08),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.amber.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.star_outlined,
-                color: Colors.amber.shade700,
-                size: 28,
-              ),
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '최고 기록',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.7),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    bestDay.isNotEmpty ? bestDay : '아직 기록 없음',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                  if (bestDay.isNotEmpty)
-                    Text(
-                      '${bestMinutes ~/ 60}시간 ${bestMinutes % 60}분',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.amber.shade700,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                ],
               ),
             ),
           ],

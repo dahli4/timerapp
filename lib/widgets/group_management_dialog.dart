@@ -30,11 +30,15 @@ Future<bool?> showGroupManagementDialog(BuildContext context) {
       return;
     }
 
+    // 새 그룹의 순서를 기존 그룹 수 + 1로 설정
+    final nextOrder = groupBox.values.length;
+
     final group = TimerGroupModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: name,
       colorHex: colorNotifier.value.toARGB32(),
       createdAt: DateTime.now(),
+      order: nextOrder,
     );
 
     await groupBox.add(group);
