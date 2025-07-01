@@ -5,6 +5,7 @@ import '../../data/study_record_model.dart';
 import '../../data/study_timer_model.dart';
 import '../../utils/review_service.dart';
 import '../../main.dart'; // themeNotifier를 import
+import '../../debug_records_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -247,6 +248,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title: const Text('학습 기록 공유'),
                     subtitle: const Text('나의 공부 기록을 친구들과 공유해보세요'),
                     onTap: _shareStudyRecord,
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.bug_report),
+                    title: const Text('기록 디버그'),
+                    subtitle: const Text('저장된 기록 확인하기'),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const DebugRecordsScreen(),
+                        ),
+                      );
+                    },
                   ),
                   const Divider(),
                 ],
