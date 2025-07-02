@@ -57,7 +57,7 @@ Future<void> showTimerDialog({
                       : Theme.of(context).colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
+                  color: Colors.black.withOpacity(0.1),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -100,7 +100,7 @@ Future<void> showTimerDialog({
                             Icons.close,
                             color: Theme.of(
                               context,
-                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                            ).colorScheme.onSurface.withOpacity(0.6),
                             size: 20,
                           ),
                         ),
@@ -134,7 +134,7 @@ Future<void> showTimerDialog({
                               borderSide: BorderSide(
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.outline.withValues(alpha: 0.3),
+                                ).colorScheme.outline.withOpacity(0.3),
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
@@ -142,7 +142,7 @@ Future<void> showTimerDialog({
                               borderSide: BorderSide(
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.outline.withValues(alpha: 0.3),
+                                ).colorScheme.outline.withOpacity(0.3),
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
@@ -270,11 +270,11 @@ Future<void> showTimerDialog({
                                 decoration: BoxDecoration(
                                   color: Theme.of(
                                     context,
-                                  ).colorScheme.surface.withValues(alpha: 0.5),
+                                  ).colorScheme.surface.withOpacity(0.5),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
                                     color: Theme.of(context).colorScheme.outline
-                                        .withValues(alpha: 0.2),
+                                        .withOpacity(0.2),
                                   ),
                                 ),
                                 child: Column(
@@ -290,9 +290,7 @@ Future<void> showTimerDialog({
                                             shape: BoxShape.circle,
                                             boxShadow: [
                                               BoxShadow(
-                                                color: selectedColor.withValues(
-                                                  alpha: 0.3,
-                                                ),
+                                                color: selectedColor.withOpacity(0.3),
                                                 blurRadius: 4,
                                                 offset: const Offset(0, 2),
                                               ),
@@ -308,7 +306,7 @@ Future<void> showTimerDialog({
                                             color: Theme.of(context)
                                                 .colorScheme
                                                 .onSurface
-                                                .withValues(alpha: 0.7),
+                                                .withOpacity(0.7),
                                           ),
                                         ),
                                       ],
@@ -411,7 +409,7 @@ class TimeSelectorWidget extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
           ),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -437,7 +435,7 @@ class TimeSelectorWidget extends StatelessWidget {
                 Icons.keyboard_arrow_down,
                 color: Theme.of(
                   context,
-                ).colorScheme.onSurface.withValues(alpha: 0.6),
+                ).colorScheme.onSurface.withOpacity(0.6),
               ),
             ],
           ),
@@ -453,7 +451,7 @@ class TimeSelectorWidget extends StatelessWidget {
         '시간 선택',
         style: TextStyle(
           fontSize: 16,
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
         ),
       );
     }
@@ -516,7 +514,7 @@ class TimeSelectorWidget extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Theme.of(
                     context,
-                  ).colorScheme.onSurface.withValues(alpha: 0.3),
+                  ).colorScheme.onSurface.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -594,7 +592,7 @@ class ColorButtonWidget extends StatelessWidget {
           color: color,
           boxShadow: [
             BoxShadow(
-              color: color.withValues(alpha: 0.4),
+              color: color.withOpacity(0.4),
               blurRadius: isSelected ? 10 : 4,
               offset: Offset(0, isSelected ? 4 : 2),
             ),

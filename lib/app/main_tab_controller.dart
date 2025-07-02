@@ -38,13 +38,13 @@ class _MainTabControllerState extends State<MainTabController> {
             top: BorderSide(
               color: Theme.of(
                 context,
-              ).colorScheme.onSurface.withValues(alpha: 0.1),
+              ).colorScheme.onSurface.withOpacity(0.1),
               width: 1,
             ),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 8,
               offset: const Offset(0, -2),
             ),
@@ -56,7 +56,7 @@ class _MainTabControllerState extends State<MainTabController> {
           selectedItemColor: Theme.of(context).colorScheme.primary,
           unselectedItemColor: Theme.of(
             context,
-          ).colorScheme.onSurface.withValues(alpha: 0.6),
+          ).colorScheme.onSurface.withOpacity(0.6),
           selectedFontSize: 12,
           unselectedFontSize: 11,
           type: BottomNavigationBarType.fixed,
@@ -102,7 +102,7 @@ class _MainTabControllerState extends State<MainTabController> {
       decoration: BoxDecoration(
         color:
             isSelected
-                ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
+                ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
                 : Colors.transparent,
         borderRadius: BorderRadius.circular(16),
       ),

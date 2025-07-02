@@ -77,7 +77,7 @@ Future<bool?> showGroupManagementDialog(BuildContext context) {
                           : Theme.of(context).colorScheme.surface,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
+                      color: Colors.black.withOpacity(0.1),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -121,7 +121,7 @@ Future<bool?> showGroupManagementDialog(BuildContext context) {
                                 Icons.close,
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.6),
+                                ).colorScheme.onSurface.withOpacity(0.6),
                                 size: 20,
                               ),
                             ),
@@ -154,14 +154,14 @@ Future<bool?> showGroupManagementDialog(BuildContext context) {
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide(
                                     color: Theme.of(context).colorScheme.outline
-                                        .withValues(alpha: 0.3),
+                                        .withOpacity(0.3),
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide(
                                     color: Theme.of(context).colorScheme.outline
-                                        .withValues(alpha: 0.3),
+                                        .withOpacity(0.3),
                                   ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
@@ -200,13 +200,13 @@ Future<bool?> showGroupManagementDialog(BuildContext context) {
                                       color: Theme.of(context)
                                           .colorScheme
                                           .surface
-                                          .withValues(alpha: 0.5),
+                                          .withOpacity(0.5),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
                                         color: Theme.of(context)
                                             .colorScheme
                                             .outline
-                                            .withValues(alpha: 0.2),
+                                            .withOpacity(0.2),
                                       ),
                                     ),
                                     child: Column(
@@ -224,7 +224,7 @@ Future<bool?> showGroupManagementDialog(BuildContext context) {
                                                 boxShadow: [
                                                   BoxShadow(
                                                     color: selectedColor
-                                                        .withValues(alpha: 0.3),
+                                                        .withOpacity(0.3),
                                                     blurRadius: 4,
                                                     offset: const Offset(0, 2),
                                                   ),
@@ -240,7 +240,7 @@ Future<bool?> showGroupManagementDialog(BuildContext context) {
                                                 color: Theme.of(context)
                                                     .colorScheme
                                                     .onSurface
-                                                    .withValues(alpha: 0.7),
+                                                    .withOpacity(0.7),
                                               ),
                                             ),
                                           ],
@@ -277,9 +277,7 @@ Future<bool?> showGroupManagementDialog(BuildContext context) {
                                                   color: color,
                                                   boxShadow: [
                                                     BoxShadow(
-                                                      color: color.withValues(
-                                                        alpha: 0.4,
-                                                      ),
+                                                      color: color.withOpacity(0.4),
                                                       blurRadius:
                                                           isSelected ? 10 : 4,
                                                       offset: Offset(

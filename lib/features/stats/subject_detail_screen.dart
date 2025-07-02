@@ -61,7 +61,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
               end: Alignment.bottomCenter,
               colors: [
                 widget.subjectColor,
-                widget.subjectColor.withValues(alpha: 0.8),
+                widget.subjectColor.withOpacity(0.8),
               ],
             ),
           ),
@@ -76,7 +76,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
                       tooltip: '이 타이머의 모든 기록 삭제',
                       onPressed: () => _showDeleteRecordsDialog(context),
                       style: IconButton.styleFrom(
-                        backgroundColor: Colors.white.withValues(alpha: 0.2),
+                        backgroundColor: Colors.white.withOpacity(0.2),
                       ),
                     ),
                   ),
@@ -111,7 +111,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: widget.subjectColor.withValues(alpha: 0.1),
+              color: widget.subjectColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -136,7 +136,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
               fontSize: 16,
               color: Theme.of(
                 context,
-              ).colorScheme.onSurface.withValues(alpha: 0.7),
+              ).colorScheme.onSurface.withOpacity(0.7),
             ),
           ),
         ],
@@ -231,7 +231,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
         gradient: LinearGradient(
           colors: [
             widget.subjectColor,
-            widget.subjectColor.withValues(alpha: 0.8),
+            widget.subjectColor.withOpacity(0.8),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -239,7 +239,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: widget.subjectColor.withValues(alpha: 0.3),
+            color: widget.subjectColor.withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -251,7 +251,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
           Text(
             '총 공부 시간',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.9),
+              color: Colors.white.withOpacity(0.9),
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
@@ -269,7 +269,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
             Text(
               '$seconds초',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.8),
+                color: Colors.white.withOpacity(0.8),
                 fontSize: 16,
               ),
             ),
@@ -286,7 +286,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
               Container(
                 width: 1,
                 height: 40,
-                color: Colors.white.withValues(alpha: 0.3),
+                color: Colors.white.withOpacity(0.3),
               ),
               Expanded(
                 child: _buildStatItem(
@@ -298,7 +298,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
               Container(
                 width: 1,
                 height: 40,
-                color: Colors.white.withValues(alpha: 0.3),
+                color: Colors.white.withOpacity(0.3),
               ),
               Expanded(
                 child: _buildStatItem(
@@ -317,7 +317,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
   Widget _buildStatItem(String label, String value, IconData icon) {
     return Column(
       children: [
-        Icon(icon, color: Colors.white.withValues(alpha: 0.9), size: 24),
+        Icon(icon, color: Colors.white.withOpacity(0.9), size: 24),
         const SizedBox(height: 8),
         Text(
           value,
@@ -330,7 +330,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.8),
+            color: Colors.white.withOpacity(0.8),
             fontSize: 14,
           ),
         ),
@@ -354,7 +354,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
           BoxShadow(
             color: Theme.of(
               context,
-            ).colorScheme.onSurface.withValues(alpha: 0.08),
+            ).colorScheme.onSurface.withOpacity(0.08),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -406,7 +406,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
                                 fontSize: 11, // 폰트 크기 줄임
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.7),
+                                ).colorScheme.onSurface.withOpacity(0.7),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -420,7 +420,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
                                 gradient: LinearGradient(
                                   colors: [
                                     widget.subjectColor,
-                                    widget.subjectColor.withValues(alpha: 0.7),
+                                    widget.subjectColor.withOpacity(0.7),
                                   ],
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
@@ -473,7 +473,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
             BoxShadow(
               color: Theme.of(
                 context,
-              ).colorScheme.onSurface.withValues(alpha: 0.08),
+              ).colorScheme.onSurface.withOpacity(0.08),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -501,7 +501,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
               style: TextStyle(
                 color: Theme.of(
                   context,
-                ).colorScheme.onSurface.withValues(alpha: 0.6),
+                ).colorScheme.onSurface.withOpacity(0.6),
               ),
             ),
           ],
@@ -527,7 +527,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
           BoxShadow(
             color: Theme.of(
               context,
-            ).colorScheme.onSurface.withValues(alpha: 0.08),
+            ).colorScheme.onSurface.withOpacity(0.08),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -558,7 +558,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
                     fontSize: 12,
                     color: Theme.of(
                       context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.6),
+                    ).colorScheme.onSurface.withOpacity(0.6),
                   ),
                 ),
             ],
@@ -578,10 +578,10 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: widget.subjectColor.withValues(alpha: 0.1),
+                color: widget.subjectColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: widget.subjectColor.withValues(alpha: 0.2),
+                  color: widget.subjectColor.withOpacity(0.2),
                   width: 1,
                 ),
               ),
@@ -617,9 +617,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: widget.subjectColor.withValues(
-                                  alpha: 0.2,
-                                ),
+                            color: widget.subjectColor.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -641,7 +639,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
                                 fontSize: 12,
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.6),
+                                ).colorScheme.onSurface.withOpacity(0.6),
                               ),
                             ),
                           ],
@@ -653,7 +651,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: widget.subjectColor.withValues(alpha: 0.15),
+                            color: widget.subjectColor.withOpacity(0.15),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(

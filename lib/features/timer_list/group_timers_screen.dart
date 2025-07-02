@@ -141,7 +141,7 @@ class _GroupTimersScreenState extends State<GroupTimersScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: widget.groupColor.withValues(alpha: 0.1),
+                color: widget.groupColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
@@ -169,7 +169,7 @@ class _GroupTimersScreenState extends State<GroupTimersScreen> {
                             Container(
                               padding: const EdgeInsets.all(24),
                               decoration: BoxDecoration(
-                                color: widget.groupColor.withValues(alpha: 0.1),
+                                color: widget.groupColor.withOpacity(0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
@@ -186,7 +186,7 @@ class _GroupTimersScreenState extends State<GroupTimersScreen> {
                                 fontWeight: FontWeight.w600,
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.7),
+                                ).colorScheme.onSurface.withOpacity(0.7),
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -196,7 +196,7 @@ class _GroupTimersScreenState extends State<GroupTimersScreen> {
                                 fontSize: 14,
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.5),
+                                ).colorScheme.onSurface.withOpacity(0.5),
                               ),
                             ),
                           ],

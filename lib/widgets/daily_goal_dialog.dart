@@ -68,10 +68,10 @@ class _DailyGoalDialogState extends State<DailyGoalDialog> {
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
             margin: const EdgeInsets.only(bottom: 20),
             decoration: BoxDecoration(
-              color: lightBlue.withValues(alpha: 0.1),
+              color: lightBlue.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: lightBlue.withValues(alpha: 0.3),
+                color: lightBlue.withOpacity(0.3),
                 width: 1,
               ),
             ),

@@ -244,7 +244,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                                 size: 64,
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.4),
+                                ).colorScheme.onSurface.withOpacity(0.4),
                               ),
                             ),
                             const SizedBox(height: 24),
@@ -255,7 +255,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                                 fontWeight: FontWeight.w600,
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.7),
+                                ).colorScheme.onSurface.withOpacity(0.7),
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -265,7 +265,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                                 fontSize: 14,
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.5),
+                                ).colorScheme.onSurface.withOpacity(0.5),
                               ),
                             ),
                           ],
@@ -352,11 +352,11 @@ class _TimerListScreenState extends State<TimerListScreen> {
                                           ? Theme.of(context)
                                               .colorScheme
                                               .outline
-                                              .withValues(alpha: 0.3)
+                                              .withOpacity(0.3)
                                           : Theme.of(context)
                                               .colorScheme
                                               .outline
-                                              .withValues(alpha: 0.1),
+                                              .withOpacity(0.1),
                                 ),
                               ),
                               child: Icon(
@@ -367,7 +367,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                                         : Theme.of(context)
                                             .colorScheme
                                             .onSurface
-                                            .withValues(alpha: 0.3),
+                                            .withOpacity(0.3),
                                 size: 18,
                               ),
                             ),
@@ -392,11 +392,11 @@ class _TimerListScreenState extends State<TimerListScreen> {
                                           ? Theme.of(context)
                                               .colorScheme
                                               .outline
-                                              .withValues(alpha: 0.3)
+                                              .withOpacity(0.3)
                                           : Theme.of(context)
                                               .colorScheme
                                               .outline
-                                              .withValues(alpha: 0.1),
+                                              .withOpacity(0.1),
                                 ),
                               ),
                               child: Icon(
@@ -407,7 +407,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                                         : Theme.of(context)
                                             .colorScheme
                                             .onSurface
-                                            .withValues(alpha: 0.3),
+                                            .withOpacity(0.3),
                                 size: 18,
                               ),
                             ),
@@ -419,7 +419,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
+                    color: color.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: color, size: 32),
@@ -444,7 +444,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ).colorScheme.onSurface.withOpacity(0.6),
                         ),
                       ),
                     ],
@@ -496,7 +496,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                       Icons.more_vert,
                       color: Theme.of(
                         context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.6),
+                      ).colorScheme.onSurface.withOpacity(0.6),
                     ),
                   )
                 else
@@ -504,7 +504,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                     Icons.chevron_right,
                     color: Theme.of(
                       context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.4),
+                    ).colorScheme.onSurface.withOpacity(0.4),
                   ),
               ],
             ),
@@ -533,7 +533,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                   decoration: BoxDecoration(
                     color: Theme.of(
                       context,
-                    ).colorScheme.primary.withValues(alpha: 0.1),
+                    ).colorScheme.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -562,7 +562,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ).colorScheme.onSurface.withOpacity(0.6),
                         ),
                       ),
                     ],
@@ -572,7 +572,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                   Icons.chevron_right,
                   color: Theme.of(
                     context,
-                  ).colorScheme.primary.withValues(alpha: 0.6),
+                  ).colorScheme.primary.withOpacity(0.6),
                 ),
               ],
             ),
@@ -654,8 +654,8 @@ class _TimerListScreenState extends State<TimerListScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  color.withValues(alpha: 0.1),
-                  color.withValues(alpha: 0.05),
+                  color.withOpacity(0.1),
+                  color.withOpacity(0.05),
                 ],
               ),
             ),
@@ -706,7 +706,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.2),
+                        color: color.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(Icons.play_arrow, size: 18, color: color),
@@ -804,7 +804,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                             border: Border.all(
                               color: Theme.of(
                                 context,
-                              ).colorScheme.outline.withValues(alpha: 0.2),
+                              ).colorScheme.outline.withOpacity(0.2),
                             ),
                           ),
                           child: Column(
@@ -819,9 +819,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                                       shape: BoxShape.circle,
                                       boxShadow: [
                                         BoxShadow(
-                                          color: selectedColor.withValues(
-                                            alpha: 0.3,
-                                          ),
+                                          color: selectedColor.withOpacity(0.3),
                                           blurRadius: 4,
                                           offset: const Offset(0, 2),
                                         ),
@@ -837,7 +835,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
                                       color: Theme.of(context)
                                           .colorScheme
                                           .onSurface
-                                          .withValues(alpha: 0.7),
+                                          .withOpacity(0.7),
                                     ),
                                   ),
                                 ],
@@ -1057,8 +1055,8 @@ class _DailyGoalCardState extends State<DailyGoalCard> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Colors.blue.shade700.withValues(alpha: 0.08),
-                        Colors.blue.shade600.withValues(alpha: 0.04),
+                        Colors.blue.shade700.withOpacity(0.08),
+                        Colors.blue.shade600.withOpacity(0.04),
                       ],
                     )
                     : null,
@@ -1121,8 +1119,8 @@ class _DailyGoalCardState extends State<DailyGoalCard> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Colors.blue.shade700.withValues(alpha: 0.08),
-                        Colors.blue.shade600.withValues(alpha: 0.04),
+                        Colors.blue.shade700.withOpacity(0.08),
+                        Colors.blue.shade600.withOpacity(0.04),
                       ],
                     )
                     : null,
@@ -1158,7 +1156,7 @@ class _DailyGoalCardState extends State<DailyGoalCard> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.green.withValues(alpha: 0.1),
+                          color: Colors.green.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -1227,7 +1225,7 @@ class _DailyGoalCardState extends State<DailyGoalCard> {
                           ).textTheme.bodySmall?.copyWith(
                             color: Theme.of(
                               context,
-                            ).colorScheme.onSurface.withValues(alpha: 0.7),
+                            ).colorScheme.onSurface.withOpacity(0.7),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -1240,10 +1238,10 @@ class _DailyGoalCardState extends State<DailyGoalCard> {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: lightBlue.withValues(alpha: 0.2),
+                          color: lightBlue.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: lightBlue.withValues(alpha: 0.3),
+                            color: lightBlue.withOpacity(0.3),
                             width: 1,
                           ),
                         ),

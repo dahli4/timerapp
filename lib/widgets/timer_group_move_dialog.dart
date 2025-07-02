@@ -29,7 +29,7 @@ Future<bool?> showTimerGroupMoveDialog(
                       : Theme.of(context).colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
+                  color: Colors.black.withOpacity(0.1),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -70,7 +70,7 @@ Future<bool?> showTimerGroupMoveDialog(
                         onPressed: () => Navigator.pop(context),
                         color: Theme.of(
                           context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.6),
+                        ).colorScheme.onSurface.withOpacity(0.6),
                       ),
                     ],
                   ),
@@ -86,7 +86,7 @@ Future<bool?> showTimerGroupMoveDialog(
                     decoration: BoxDecoration(
                       color: Theme.of(
                         context,
-                      ).colorScheme.surface.withValues(alpha: 0.5),
+                      ).colorScheme.surface.withOpacity(0.5),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -96,7 +96,7 @@ Future<bool?> showTimerGroupMoveDialog(
                           decoration: BoxDecoration(
                             color: Color(
                               timer.colorHex ?? Colors.blue.shade600.toARGB32(),
-                            ).withValues(alpha: 0.1),
+                            ).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
@@ -128,7 +128,7 @@ Future<bool?> showTimerGroupMoveDialog(
                                   context,
                                 ).textTheme.bodySmall?.copyWith(
                                   color: Theme.of(context).colorScheme.onSurface
-                                      .withValues(alpha: 0.7),
+                                      .withOpacity(0.7),
                                 ),
                               ),
                             ],
@@ -149,7 +149,7 @@ Future<bool?> showTimerGroupMoveDialog(
                         leading: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.grey.withValues(alpha: 0.1),
+                            color: Colors.grey.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
@@ -166,7 +166,7 @@ Future<bool?> showTimerGroupMoveDialog(
                                 timer.groupId == null
                                     ? Theme.of(context).colorScheme.primary
                                     : Theme.of(context).colorScheme.onSurface
-                                        .withValues(alpha: 0.6),
+                                        .withOpacity(0.6),
                             fontWeight:
                                 timer.groupId == null
                                     ? FontWeight.w500
@@ -206,7 +206,7 @@ Future<bool?> showTimerGroupMoveDialog(
                               color: Color(
                                 group.colorHex ??
                                     Colors.blue.shade500.toARGB32(),
-                              ).withValues(alpha: 0.1),
+                              ).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Icon(
@@ -226,7 +226,7 @@ Future<bool?> showTimerGroupMoveDialog(
                                   isCurrentGroup
                                       ? Theme.of(context).colorScheme.primary
                                       : Theme.of(context).colorScheme.onSurface
-                                          .withValues(alpha: 0.6),
+                                          .withOpacity(0.6),
                               fontWeight:
                                   isCurrentGroup
                                       ? FontWeight.w500

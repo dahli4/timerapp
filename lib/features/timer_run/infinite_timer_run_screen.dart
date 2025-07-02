@@ -222,9 +222,9 @@ class _InfiniteTimerRunScreenState extends State<InfiniteTimerRunScreen>
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       margin: const EdgeInsets.symmetric(horizontal: 32),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -319,7 +319,7 @@ class _InfiniteTimerRunScreenState extends State<InfiniteTimerRunScreen>
                         border: Border.all(color: timerColor, width: 8),
                         boxShadow: [
                           BoxShadow(
-                            color: timerColor.withValues(alpha: 0.3),
+                            color: timerColor.withOpacity(0.3),
                             blurRadius: 20,
                             spreadRadius: 5,
                           ),
@@ -392,7 +392,7 @@ class _InfiniteTimerRunScreenState extends State<InfiniteTimerRunScreen>
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: timerColor.withValues(alpha: 0.3),
+                                color: timerColor.withOpacity(0.3),
                                 blurRadius: 8,
                                 spreadRadius: 2,
                               ),
@@ -416,7 +416,7 @@ class _InfiniteTimerRunScreenState extends State<InfiniteTimerRunScreen>
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.grey.withValues(alpha: 0.3),
+                                color: Colors.grey.withOpacity(0.3),
                                 blurRadius: 8,
                                 spreadRadius: 2,
                               ),
