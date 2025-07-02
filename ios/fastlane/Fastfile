@@ -1,40 +1,16 @@
-# This file contains the fastlane.tools configuration
-# You can find the documentation at https://docs.fastlane.tools
-#
-# For a list of all available actions, check out
-#
-#     https://docs.fastlane.tools/actions
-#
-# For a list of all available plugins, check out
-#
-#     https://docs.fastlane.tools/plugins/available-plugins
-
-# Load environment variables
-require 'dotenv/load'
-
-# Uncomment the line if you want fastlane to automatically update itself
-# update_fastlane
-
 default_platform(:ios)
 
 platform :ios do
   desc "Build Flutter app for iOS"
   lane :build do
-    # Flutter 프로젝트 루트로 이동해서 빌드
     Dir.chdir("..") do
       sh("flutter", "clean")
       sh("flutter", "pub", "get")
-    end
-    
-    # CocoaPods 재설치 (Flutter build 전에 실행)
-    sh("bundle", "exec", "pod", "install")
-    
-    # Flutter 빌드 (CocoaPods 설치 후)
-    Dir.chdir("..") do
       sh("flutter", "build", "ios", "--release", "--no-codesign")
     end
     
-    # iOS 빌드
+    sh("bundle", "exec", "pod", "install")
+    
     increment_build_number(xcodeproj: "Runner.xcodeproj")
     build_app(
       workspace: "Runner.xcworkspace", 
@@ -44,81 +20,20 @@ platform :ios do
     )
   end
 
-  desc "Build with version bump (patch)"
-  lane :build_patch do
-    # Flutter 버전 패치 업데이트 (1.0.1 → 1.0.2)
-    Dir.chdir("..") do
-      sh("flutter", "pub", "global", "activate", "cider")
-      sh("flutter", "pub", "global", "run", "cider", "bump", "patch")
-      sh("flutter", "clean")
-      sh("flutter", "pub", "get")
-      sh("flutter", "build", "ios", "--release", "--no-codesign")
-    end
-    
-    # CocoaPods 재설치
-    sh("bundle", "exec", "pod", "install")
-    
-    # iOS 빌드
-    increment_build_number(xcodeproj: "Runner.xcodeproj")
-    build_app(
-      workspace: "Runner.xcworkspace", 
-      scheme: "Runner",
-      configuration: "Release",
-      export_method: "app-store"
-    )
-  end
-
-  desc "Build with version bump (minor)"
-  lane :build_minor do
-    # Flutter 버전 마이너 업데이트 (1.0.1 → 1.1.0)
-    Dir.chdir("..") do
-      sh("flutter", "pub", "global", "activate", "cider")
-      sh("flutter", "pub", "global", "run", "cider", "bump", "minor")
-      sh("flutter", "clean")
-      sh("flutter", "pub", "get")
-      sh("flutter", "build", "ios", "--release", "--no-codesign")
-    end
-    
-    # CocoaPods 재설치
-    sh("bundle", "exec", "pod", "install")
-    
-    # iOS 빌드
-    increment_build_number(xcodeproj: "Runner.xcodeproj")
-    build_app(
-      workspace: "Runner.xcworkspace", 
-      scheme: "Runner",
-      configuration: "Release",
-      export_method: "app-store"
-    )
-  end
-
-  desc "Upload to TestFlight for beta testing"
+  desc "Upload to TestFlight"
   lane :beta do
     build
     upload_to_testflight(
       skip_waiting_for_build_processing: true,
       distribute_external: false,
-      changelog: File.read("fastlane/metadata/ko/release_notes.txt"),
+      changelog: File.read("metadata/ko/release_notes.txt"),
       api_key_path: ENV["APP_STORE_CONNECT_API_KEY_PATH"]
     )
   end
 
-  desc "Upload to TestFlight with patch version bump"
-  lane :beta_patch do
-    build_patch
-    upload_to_testflight(
-      skip_waiting_for_build_processing: true,
-      distribute_external: false,
-      changelog: File.read("fastlane/metadata/ko/release_notes.txt"),
-      api_key_path: ENV["APP_STORE_CONNECT_API_KEY_PATH"]
-    )
-  end
-
-  desc "Push a new release build to the App Store"
-  lane :release do
-    build
-    
-    # Read App Store Connect credentials from config file
+  desc "Upload existing IPA to TestFlight"
+  lane :upload do
+    # Read App Store Connect credentials
     config = {}
     File.read("../../.app_store_config").strip.split("\n").each do |line|
       key, value = line.split("=", 2)
@@ -128,60 +43,24 @@ platform :ios do
     # Set environment variable for fastlane
     ENV["FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD"] = config["password"]
     
-    upload_to_app_store(
-      force: true,
-      submit_for_review: false,        # false = 업로드만, true = 심사 자동 제출
-      automatic_release: false,        # false = 수동 출시, true = 심사 통과 시 자동 출시
-      skip_metadata: false,
-      skip_screenshots: false,
+    upload_to_testflight(
+      ipa: "Runner.ipa",
+      skip_waiting_for_build_processing: true,
+      distribute_external: false,
+      changelog: File.read("metadata/ko/release_notes.txt"),
       app_identifier: config["app_identifier"],
       username: config["username"]
     )
   end
 
-  desc "Push a new release with patch version bump"
-  lane :release_patch do
-    build_patch
-    upload_to_app_store(
-      force: true,
-      submit_for_review: false,        # false = 업로드만, true = 심사 자동 제출
-      automatic_release: false,        # false = 수동 출시, true = 심사 통과 시 자동 출시
-      skip_metadata: false,
-      skip_screenshots: false,
-      api_key_path: ENV["APP_STORE_CONNECT_API_KEY_PATH"]
-    )
-  end
-
-  desc "Push a new release with minor version bump"
-  lane :release_minor do
-    build_minor
-    upload_to_app_store(
-      force: true,
-      submit_for_review: false,        # false = 업로드만, true = 심사 자동 제출
-      automatic_release: false,        # false = 수동 출시, true = 심사 통과 시 자동 출시
-      skip_metadata: false,
-      skip_screenshots: false,
-      api_key_path: ENV["APP_STORE_CONNECT_API_KEY_PATH"]
-    )
-  end
-
-  desc "Push and submit for review (auto submit)"
-  lane :release_submit do
+  desc "Push to App Store"
+  lane :release do
     build
     upload_to_app_store(
       force: true,
-      submit_for_review: true,         # 심사 자동 제출
-      automatic_release: false,        # 심사 통과 후 수동 출시
+      submit_for_review: false,
+      automatic_release: false,
       skip_metadata: false,
-      skip_screenshots: false,
-      api_key_path: ENV["APP_STORE_CONNECT_API_KEY_PATH"]
-    )
-  end
-
-  desc "Update app metadata only"
-  lane :metadata do
-    upload_to_app_store(
-      skip_binary_upload: true,
       skip_screenshots: false,
       api_key_path: ENV["APP_STORE_CONNECT_API_KEY_PATH"]
     )

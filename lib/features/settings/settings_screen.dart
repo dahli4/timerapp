@@ -257,7 +257,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: ListTile(
                 leading: const Icon(Icons.info_outline),
                 title: const Text('앱 버전'),
-                subtitle: const Text('v1.1.1'),
+                subtitle: const Text('v1.1.2'),
                 enabled: false,
               ),
             ),

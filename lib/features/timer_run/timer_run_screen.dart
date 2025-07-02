@@ -55,6 +55,7 @@ class _TimerRunScreenState extends State<TimerRunScreen>
           _totalSeconds.toDouble(),
         );
 
+        // 타이머가 완료되었으면 완료 처리
         if (_elapsedSeconds >= _totalSeconds) {
           _elapsedSeconds = _totalSeconds.toDouble();
           _isRunning = false;
@@ -137,37 +138,77 @@ class _TimerRunScreenState extends State<TimerRunScreen>
   }
 
   void _saveRecord() async {
-    // 이미 저장되었거나 1분 미만이면 저장하지 않음
-    if (_hasRecordSaved) return;
-
     final recordBox = Hive.box<StudyRecordModel>('records');
 
-    // 실제 경과 시간을 정확히 계산
-    int minutesToSave = _elapsedSeconds ~/ 60;
-    int secondsToSave = (_elapsedSeconds % 60).toInt();
+    // 실제 경과 시간을 정확히 계산 (총 초를 정수로 변환)
+    int totalSecondsInt = _elapsedSeconds.toInt();
+    int minutesToSave = totalSecondsInt ~/ 60;
+    int secondsToSave = totalSecondsInt % 60;
 
     // 1분 미만이면 저장하지 않음
-    if (minutesToSave == 0 && secondsToSave < 60) {
+    if (totalSecondsInt < 60) {
       return;
     }
 
-    await recordBox.add(
-      StudyRecordModel(
-        timerId: widget.timer.id,
-        date: DateTime.now(),
-        minutes: minutesToSave,
-        seconds: secondsToSave,
-      ),
-    );
+    if (!_hasRecordSaved) {
+      // 첫 번째 저장
+      await recordBox.add(
+        StudyRecordModel(
+          timerId: widget.timer.id,
+          date: DateTime.now(),
+          minutes: minutesToSave,
+          seconds: secondsToSave,
+        ),
+      );
+      _hasRecordSaved = true;
+      debugPrint(
+        '첫 기록 저장: $minutesToSave분 $secondsToSave초 (총 $totalSecondsInt초)',
+      );
+    } else {
+      // 이미 저장된 기록이 있으면 오늘 이 타이머의 마지막 기록을 찾아서 업데이트
+      final today = DateTime.now();
+      final records = recordBox.values.toList();
 
-    _hasRecordSaved = true; // 저장 완료 플래그 설정
-    debugPrint('기록 저장: $minutesToSave분 $secondsToSave초');
+      // 오늘 이 타이머의 마지막 기록 찾기
+      StudyRecordModel? todayLastRecord;
+      int lastRecordIndex = -1;
 
-    // 타이머 완료 카운트 증가 및 리뷰 요청
-    await ReviewService.incrementCompletedTimers();
+      for (int i = records.length - 1; i >= 0; i--) {
+        final record = records[i];
+        if (record.timerId == widget.timer.id &&
+            record.date.year == today.year &&
+            record.date.month == today.month &&
+            record.date.day == today.day) {
+          todayLastRecord = record;
+          lastRecordIndex = i;
+          break;
+        }
+      }
 
-    // 타이머가 완전히 완료된 경우에만 리뷰 요청
+      if (todayLastRecord != null && lastRecordIndex >= 0) {
+        // 기존 기록의 시간과 다르면 업데이트
+        if (todayLastRecord.minutes != minutesToSave ||
+            todayLastRecord.seconds != secondsToSave) {
+          await recordBox.putAt(
+            lastRecordIndex,
+            StudyRecordModel(
+              timerId: widget.timer.id,
+              date: todayLastRecord.date, // 원래 시작 시간 유지
+              minutes: minutesToSave,
+              seconds: secondsToSave,
+            ),
+          );
+          debugPrint(
+            '기록 업데이트: $minutesToSave분 $secondsToSave초 (총 $totalSecondsInt초)',
+          );
+        }
+      }
+    }
+
+    // 타이머 완료 카운트 증가는 타이머가 완전히 완료된 경우에만 (중복 방지)
     if (_elapsedSeconds >= _totalSeconds && mounted) {
+      await ReviewService.incrementCompletedTimers();
+
       // 약간의 지연 후 리뷰 요청 (완료 애니메이션 후)
       Future.delayed(const Duration(milliseconds: 1500), () {
         if (mounted) {
@@ -390,6 +431,7 @@ class _TimerRunScreenState extends State<TimerRunScreen>
     final minutes = (secondsLeft ~/ 60).toString().padLeft(2, '0');
     final seconds = (secondsLeft % 60).toString().padLeft(2, '0');
     final progress = (_elapsedSeconds / _totalSeconds).clamp(0.0, 1.0);
+    final timeDisplay = '$minutes:$seconds';
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final timerTextColor =
@@ -458,7 +500,7 @@ class _TimerRunScreenState extends State<TimerRunScreen>
                           ),
                         ),
                         Text(
-                          '$minutes:$seconds',
+                          timeDisplay,
                           style: TextStyle(
                             fontSize: 48,
                             color: timerTextColor,
