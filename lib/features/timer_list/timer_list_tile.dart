@@ -27,13 +27,13 @@ class TimerListTile extends StatelessWidget {
           BoxShadow(
             color: Theme.of(
               context,
-            ).colorScheme.onSurface.withValues(alpha: 0.1),
+            ).colorScheme.onSurface.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
         border: Border.all(
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
           width: 1,
         ),
       ),
@@ -61,7 +61,7 @@ class TimerListTile extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
+                    color: color.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(Icons.timer_outlined, color: color, size: 24),
@@ -103,7 +103,7 @@ class TimerListTile extends StatelessWidget {
                               fontSize: 14,
                               color: Theme.of(
                                 context,
-                              ).colorScheme.onSurface.withValues(alpha: 0.7),
+                              ).colorScheme.onSurface.withOpacity(0.7),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -121,7 +121,7 @@ class TimerListTile extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: Theme.of(
                           context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.1),
+                        ).colorScheme.onSurface.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: IconButton(
@@ -129,7 +129,7 @@ class TimerListTile extends StatelessWidget {
                           Icons.edit_outlined,
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.7),
+                          ).colorScheme.onSurface.withOpacity(0.7),
                           size: 20,
                         ),
                         onPressed: onEdit,

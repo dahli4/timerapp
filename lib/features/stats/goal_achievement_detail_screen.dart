@@ -131,8 +131,8 @@ class _GoalAchievementDetailScreenState
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             colors: [
-              Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-              Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+              Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              Theme.of(context).colorScheme.primary.withOpacity(0.05),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -183,7 +183,7 @@ class _GoalAchievementDetailScreenState
               const SizedBox(height: 16),
               LinearProgressIndicator(
                 value: achievedDays / totalDaysWithGoals,
-                backgroundColor: Colors.grey.withValues(alpha: 0.3),
+                backgroundColor: Colors.grey.withOpacity(0.3),
                 valueColor: AlwaysStoppedAnimation<Color>(
                   achievedDays / totalDaysWithGoals >= 0.7
                       ? Colors.green
@@ -196,7 +196,7 @@ class _GoalAchievementDetailScreenState
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(
                     context,
-                  ).colorScheme.onSurface.withValues(alpha: 0.7),
+                  ).colorScheme.onSurface.withOpacity(0.7),
                 ),
               ),
             ],
@@ -215,9 +215,9 @@ class _GoalAchievementDetailScreenState
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+        border: Border.all(color: color.withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -236,7 +236,7 @@ class _GoalAchievementDetailScreenState
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Theme.of(
                 context,
-              ).colorScheme.onSurface.withValues(alpha: 0.7),
+              ).colorScheme.onSurface.withOpacity(0.7),
             ),
           ),
         ],
@@ -318,7 +318,7 @@ class _GoalAchievementDetailScreenState
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
         ),
       ),
       child: Row(
@@ -354,7 +354,7 @@ class _GoalAchievementDetailScreenState
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(
                           context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.7),
+                        ).colorScheme.onSurface.withOpacity(0.7),
                       ),
                     ),
                     Text(
@@ -369,7 +369,7 @@ class _GoalAchievementDetailScreenState
                   const SizedBox(height: 8),
                   LinearProgressIndicator(
                     value: (achievementRate / 100).clamp(0, 1),
-                    backgroundColor: Colors.grey.withValues(alpha: 0.3),
+                    backgroundColor: Colors.grey.withOpacity(0.3),
                     valueColor: AlwaysStoppedAnimation<Color>(
                       achievementRate >= 100
                           ? Colors.green
@@ -483,7 +483,7 @@ class _GoalAchievementDetailScreenState
       decoration: BoxDecoration(
         color: Theme.of(
           context,
-        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -509,7 +509,7 @@ class _GoalAchievementDetailScreenState
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(
                   context,
-                ).colorScheme.onSurface.withValues(alpha: 0.7),
+                ).colorScheme.onSurface.withOpacity(0.7),
               ),
             ),
           ] else ...[
@@ -518,7 +518,7 @@ class _GoalAchievementDetailScreenState
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(
                   context,
-                ).colorScheme.onSurface.withValues(alpha: 0.5),
+                ).colorScheme.onSurface.withOpacity(0.5),
               ),
             ),
           ],

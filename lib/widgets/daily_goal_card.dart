@@ -46,8 +46,8 @@ class _DailyGoalCardState extends State<DailyGoalCard> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Colors.blue.shade700.withValues(alpha: 0.08),
-                        Colors.blue.shade600.withValues(alpha: 0.04),
+                        Colors.blue.shade700.withOpacity(0.08),
+                        Colors.blue.shade600.withOpacity(0.04),
                       ],
                     )
                     : null,
@@ -110,8 +110,8 @@ class _DailyGoalCardState extends State<DailyGoalCard> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Colors.blue.shade700.withValues(alpha: 0.08),
-                        Colors.blue.shade600.withValues(alpha: 0.04),
+                        Colors.blue.shade700.withOpacity(0.08),
+                        Colors.blue.shade600.withOpacity(0.04),
                       ],
                     )
                     : null,
@@ -147,7 +147,7 @@ class _DailyGoalCardState extends State<DailyGoalCard> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.green.withValues(alpha: 0.1),
+                          color: Colors.green.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -216,7 +216,7 @@ class _DailyGoalCardState extends State<DailyGoalCard> {
                           ).textTheme.bodySmall?.copyWith(
                             color: Theme.of(
                               context,
-                            ).colorScheme.onSurface.withValues(alpha: 0.7),
+                            ).colorScheme.onSurface.withOpacity(0.7),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -229,10 +229,10 @@ class _DailyGoalCardState extends State<DailyGoalCard> {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: lightBlue.withValues(alpha: 0.2),
+                          color: lightBlue.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: lightBlue.withValues(alpha: 0.3),
+                            color: lightBlue.withOpacity(0.3),
                             width: 1,
                           ),
                         ),

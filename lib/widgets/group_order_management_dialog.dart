@@ -106,7 +106,7 @@ class _GroupOrderManagementDialogState
               decoration: BoxDecoration(
                 color: Theme.of(
                   context,
-                ).colorScheme.primary.withValues(alpha: 0.1),
+                ).colorScheme.primary.withOpacity(0.1),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
@@ -133,7 +133,7 @@ class _GroupOrderManagementDialogState
                     onPressed: () => Navigator.pop(context, false),
                     icon: const Icon(Icons.close),
                     style: IconButton.styleFrom(
-                      backgroundColor: Colors.grey.withValues(alpha: 0.1),
+                      backgroundColor: Colors.grey.withOpacity(0.1),
                     ),
                   ),
                 ],
@@ -148,7 +148,7 @@ class _GroupOrderManagementDialogState
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(
                     context,
-                  ).colorScheme.onSurface.withValues(alpha: 0.7),
+                  ).colorScheme.onSurface.withOpacity(0.7),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -167,7 +167,7 @@ class _GroupOrderManagementDialogState
                               size: 48,
                               color: Theme.of(
                                 context,
-                              ).colorScheme.onSurface.withValues(alpha: 0.3),
+                              ).colorScheme.onSurface.withOpacity(0.3),
                             ),
                             const SizedBox(height: 16),
                             Text(
@@ -177,7 +177,7 @@ class _GroupOrderManagementDialogState
                               ).textTheme.bodyLarge?.copyWith(
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.5),
+                                ).colorScheme.onSurface.withOpacity(0.5),
                               ),
                             ),
                           ],
@@ -203,7 +203,7 @@ class _GroupOrderManagementDialogState
                               border: Border.all(
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.outline.withValues(alpha: 0.2),
+                                ).colorScheme.outline.withOpacity(0.2),
                               ),
                             ),
                             child: ListTile(
@@ -215,7 +215,7 @@ class _GroupOrderManagementDialogState
                                     color: Theme.of(context)
                                         .colorScheme
                                         .onSurface
-                                        .withValues(alpha: 0.5),
+                                        .withOpacity(0.5),
                                   ),
                                   const SizedBox(width: 8),
                                   Container(
@@ -239,7 +239,7 @@ class _GroupOrderManagementDialogState
                                   context,
                                 ).textTheme.bodySmall?.copyWith(
                                   color: Theme.of(context).colorScheme.onSurface
-                                      .withValues(alpha: 0.6),
+                                      .withOpacity(0.6),
                                 ),
                               ),
                               contentPadding: const EdgeInsets.symmetric(

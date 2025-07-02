@@ -62,7 +62,7 @@ class AllSubjectsStatsScreen extends StatelessWidget {
                         size: 64,
                         color: Theme.of(
                           context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.3),
+                        ).colorScheme.onSurface.withOpacity(0.3),
                       ),
                       const SizedBox(height: 24),
                       Text(
@@ -72,7 +72,7 @@ class AllSubjectsStatsScreen extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.7),
+                          ).colorScheme.onSurface.withOpacity(0.7),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -82,7 +82,7 @@ class AllSubjectsStatsScreen extends StatelessWidget {
                           fontSize: 14,
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.5),
+                          ).colorScheme.onSurface.withOpacity(0.5),
                         ),
                       ),
                     ],
@@ -139,7 +139,7 @@ class AllSubjectsStatsScreen extends StatelessWidget {
                               BoxShadow(
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.08),
+                                ).colorScheme.onSurface.withOpacity(0.08),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -147,7 +147,7 @@ class AllSubjectsStatsScreen extends StatelessWidget {
                             border: Border.all(
                               color: Theme.of(
                                 context,
-                              ).colorScheme.onSurface.withValues(alpha: 0.08),
+                              ).colorScheme.onSurface.withOpacity(0.08),
                               width: 1,
                             ),
                           ),
@@ -163,7 +163,7 @@ class AllSubjectsStatsScreen extends StatelessWidget {
                                     gradient: LinearGradient(
                                       colors: [
                                         subjectColor,
-                                        subjectColor.withValues(alpha: 0.7),
+                                        subjectColor.withOpacity(0.7),
                                       ],
                                       begin: Alignment.topCenter,
                                       end: Alignment.bottomCenter,
@@ -196,7 +196,7 @@ class AllSubjectsStatsScreen extends StatelessWidget {
                                     vertical: 5,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: subjectColor.withValues(alpha: 0.1),
+                                    color: subjectColor.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Text(
@@ -214,7 +214,7 @@ class AllSubjectsStatsScreen extends StatelessWidget {
                                 Icon(
                                   Icons.chevron_right,
                                   color: Theme.of(context).colorScheme.onSurface
-                                      .withValues(alpha: 0.4),
+                                      .withOpacity(0.4),
                                 ),
                               ],
                             ),
