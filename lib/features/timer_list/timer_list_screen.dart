@@ -5,12 +5,14 @@ import '../../data/timer_group_model.dart';
 import '../../data/study_record_model.dart';
 import '../../widgets/daily_goal_dialog.dart';
 import '../../widgets/group_management_dialog.dart';
+import '../../widgets/daily_goal_card.dart';
 
-import '../../utils/daily_goal_service.dart';
 import 'timer_list_dialogs.dart';
 import 'group_timers_screen.dart';
 import '../timer_run/timer_run_screen.dart';
 import '../timer_run/infinite_timer_run_screen.dart';
+import 'view_models/timer_list_view_model.dart';
+import 'view_models/group_view_model.dart';
 
 class TimerListScreen extends StatefulWidget {
   const TimerListScreen({super.key});
@@ -22,12 +24,16 @@ class TimerListScreen extends StatefulWidget {
 class _TimerListScreenState extends State<TimerListScreen> {
   late Box<StudyTimerModel> _timerBox;
   late Box<TimerGroupModel> _groupBox;
+  late TimerListViewModel _listViewModel;
+  late GroupViewModel _groupViewModel;
 
   @override
   void initState() {
     super.initState();
     _timerBox = Hive.box<StudyTimerModel>('timers');
     _groupBox = Hive.box<TimerGroupModel>('groups');
+    _listViewModel = TimerListViewModel(_timerBox, _groupBox);
+    _groupViewModel = GroupViewModel(_groupBox, _timerBox);
   }
 
   void _showAddTimerDialog() {
@@ -64,7 +70,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
           isInfinite: isInfinite,
           isFavorite: false,
         );
-        await _timerBox.add(timer);
+        await _listViewModel.addTimer(timer);
         setState(() {});
         if (mounted) {
           Navigator.pop(context);
@@ -94,97 +100,19 @@ class _TimerListScreenState extends State<TimerListScreen> {
   }
 
   Future<void> _moveGroupUp(int index) async {
-    if (index <= 0) return;
-
-    final groups =
-        _groupBox.values.toList()
-          ..sort((a, b) => a.safeOrder.compareTo(b.safeOrder));
-
-    // 위 그룹과 순서 바꾸기
-    final currentGroup = groups[index];
-    final aboveGroup = groups[index - 1];
-
-    // 순서 값 교체
-    final tempOrder = currentGroup.safeOrder;
-
-    // 현재 그룹을 위로
-    final updatedCurrentGroup = TimerGroupModel(
-      id: currentGroup.id,
-      name: currentGroup.name,
-      colorHex: currentGroup.colorHex,
-      createdAt: currentGroup.createdAt,
-      modifiedAt: DateTime.now(),
-      order: aboveGroup.safeOrder,
-    );
-
-    // 위 그룹을 아래로
-    final updatedAboveGroup = TimerGroupModel(
-      id: aboveGroup.id,
-      name: aboveGroup.name,
-      colorHex: aboveGroup.colorHex,
-      createdAt: aboveGroup.createdAt,
-      modifiedAt: DateTime.now(),
-      order: tempOrder,
-    );
-
-    // 기존 그룹들 삭제하고 새로 추가
-    await currentGroup.delete();
-    await aboveGroup.delete();
-    await _groupBox.add(updatedCurrentGroup);
-    await _groupBox.add(updatedAboveGroup);
-
+    await _groupViewModel.moveGroupUp(index);
     setState(() {});
   }
 
   Future<void> _moveGroupDown(int index) async {
-    final groups =
-        _groupBox.values.toList()
-          ..sort((a, b) => a.safeOrder.compareTo(b.safeOrder));
-    if (index >= groups.length - 1) return;
-
-    // 아래 그룹과 순서 바꾸기
-    final currentGroup = groups[index];
-    final belowGroup = groups[index + 1];
-
-    // 순서 값 교체
-    final tempOrder = currentGroup.safeOrder;
-
-    // 현재 그룹을 아래로
-    final updatedCurrentGroup = TimerGroupModel(
-      id: currentGroup.id,
-      name: currentGroup.name,
-      colorHex: currentGroup.colorHex,
-      createdAt: currentGroup.createdAt,
-      modifiedAt: DateTime.now(),
-      order: belowGroup.safeOrder,
-    );
-
-    // 아래 그룹을 위로
-    final updatedBelowGroup = TimerGroupModel(
-      id: belowGroup.id,
-      name: belowGroup.name,
-      colorHex: belowGroup.colorHex,
-      createdAt: belowGroup.createdAt,
-      modifiedAt: DateTime.now(),
-      order: tempOrder,
-    );
-
-    // 기존 그룹들 삭제하고 새로 추가
-    await currentGroup.delete();
-    await belowGroup.delete();
-    await _groupBox.add(updatedCurrentGroup);
-    await _groupBox.add(updatedBelowGroup);
-
+    await _groupViewModel.moveGroupDown(index);
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    final groups =
-        _groupBox.values.toList()
-          ..sort((a, b) => a.safeOrder.compareTo(b.safeOrder));
-    final ungroupedTimers =
-        _timerBox.values.where((timer) => timer.groupId == null).toList();
+    final groups = _listViewModel.getGroupsSorted();
+    final ungroupedTimers = _listViewModel.getUngroupedTimers();
 
     return Scaffold(
       body: SafeArea(
@@ -583,15 +511,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
   }
 
   Widget _buildQuickStartSection() {
-    // 모든 타이머 가져오기
-    final allTimers = _timerBox.values.toList();
-    if (allTimers.isEmpty) return const SizedBox.shrink();
-
-    // 즐겨찾기된 타이머들만 표시
-    final favoriteTimers =
-        allTimers.where((timer) => timer.isFavorite).toList();
-
-    // 즐겨찾기 타이머가 없으면 섹션을 숨김
+    final favoriteTimers = _listViewModel.getFavoriteTimers();
     if (favoriteTimers.isEmpty) return const SizedBox.shrink();
 
     favoriteTimers.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -912,13 +832,8 @@ class _TimerListScreenState extends State<TimerListScreen> {
         modifiedAt: DateTime.now(),
       );
 
-      final index = _groupBox.values.toList().indexWhere(
-        (g) => g.id == group.id,
-      );
-      if (index >= 0) {
-        await _groupBox.putAt(index, updatedGroup);
-        setState(() {});
-      }
+      await _groupViewModel.updateGroup(updatedGroup);
+      setState(() {});
     }
   }
 
@@ -945,33 +860,8 @@ class _TimerListScreenState extends State<TimerListScreen> {
     );
 
     if (result == true) {
-      // 그룹에 속한 타이머들의 groupId를 null로 변경
-      final timersToUpdate =
-          _timerBox.values.where((timer) => timer.groupId == group.id).toList();
-
-      for (final timer in timersToUpdate) {
-        final index = _timerBox.values.toList().indexOf(timer);
-        final updatedTimer = StudyTimerModel(
-          id: timer.id,
-          title: timer.title,
-          durationMinutes: timer.durationMinutes,
-          createdAt: timer.createdAt,
-          colorHex: timer.colorHex,
-          groupId: null,
-          isInfinite: timer.isInfinite,
-          isFavorite: timer.isFavorite,
-        );
-        await _timerBox.putAt(index, updatedTimer);
-      }
-
-      // 그룹 삭제
-      final index = _groupBox.values.toList().indexWhere(
-        (g) => g.id == group.id,
-      );
-      if (index >= 0) {
-        await _groupBox.deleteAt(index);
-        setState(() {});
-      }
+      await _groupViewModel.deleteGroup(group);
+      setState(() {});
     }
   }
 
@@ -982,10 +872,7 @@ class _TimerListScreenState extends State<TimerListScreen> {
       itemCount: groups.length,
       itemBuilder: (context, index) {
         final group = groups[index];
-        final groupTimers =
-            _timerBox.values
-                .where((timer) => timer.groupId == group.id)
-                .toList();
+        final groupTimers = _listViewModel.getTimersForGroup(group.id);
 
         return _buildGroupCard(
           key: ValueKey(group.id),
@@ -1004,266 +891,3 @@ class _TimerListScreenState extends State<TimerListScreen> {
   }
 }
 
-// DailyGoalCard 위젯을 직접 정의
-class DailyGoalCard extends StatefulWidget {
-  final VoidCallback? onTap;
-
-  const DailyGoalCard({super.key, this.onTap});
-
-  @override
-  State<DailyGoalCard> createState() => _DailyGoalCardState();
-}
-
-class _DailyGoalCardState extends State<DailyGoalCard> {
-  final DailyGoalService _goalService = DailyGoalService();
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: Hive.box<StudyRecordModel>('records').listenable(),
-      builder: (context, Box<StudyRecordModel> box, child) {
-        final progressInfo = _goalService.getTodayProgressInfo();
-
-        if (!progressInfo.isGoalSet) {
-          return _buildNoGoalCard();
-        }
-
-        return _buildProgressCard(progressInfo);
-      },
-    );
-  }
-
-  Widget _buildNoGoalCard() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor =
-        isDark ? Theme.of(context).colorScheme.surface : Colors.blue.shade50;
-    final iconColor = isDark ? Colors.blue.shade300 : const Color(0xFF87CEEB);
-
-    return Card(
-      margin: const EdgeInsets.all(16),
-      elevation: 2,
-      color: backgroundColor,
-      child: InkWell(
-        onTap: widget.onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            gradient:
-                isDark
-                    ? LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.blue.shade700.withOpacity(0.08),
-                        Colors.blue.shade600.withOpacity(0.04),
-                      ],
-                    )
-                    : null,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Icon(Icons.flag_outlined, size: 32, color: iconColor),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '오늘의 목표를 설정해보세요',
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '목표 시간을 설정하고 성취감을 느껴보세요',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(Icons.add_circle_outline, color: iconColor, size: 24),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProgressCard(DailyProgressInfo info) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final lightBlue = isDark ? Colors.blue.shade300 : const Color(0xFF87CEEB);
-    final isAchieved = info.isAchieved;
-    final progressColor = isAchieved ? Colors.green : lightBlue;
-    final backgroundColor =
-        isDark ? Theme.of(context).colorScheme.surface : Colors.blue.shade50;
-
-    return Card(
-      margin: const EdgeInsets.all(16),
-      elevation: 2,
-      color: backgroundColor,
-      child: InkWell(
-        onTap: widget.onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            gradient:
-                isDark
-                    ? LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.blue.shade700.withOpacity(0.08),
-                        Colors.blue.shade600.withOpacity(0.04),
-                      ],
-                    )
-                    : null,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 헤더
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          isAchieved ? Icons.emoji_events : Icons.flag,
-                          color: progressColor,
-                          size: 24,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '오늘의 목표',
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                    if (isAchieved)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '달성!',
-                          style: TextStyle(
-                            color: Colors.green[700],
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-
-                const SizedBox(height: 16),
-
-                // 진행률 바
-                Row(
-                  children: [
-                    Expanded(
-                      child: LinearProgressIndicator(
-                        value: info.progress,
-                        backgroundColor:
-                            isDark ? Colors.grey[700] : Colors.grey[300],
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          progressColor,
-                        ),
-                        minHeight: 8,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      '${(info.progress * 100).toInt()}%',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                // 시간 정보
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '완료: ${info.completedTimeString}',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                        Text(
-                          '목표: ${info.goalTimeString}',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withOpacity(0.7),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (!isAchieved && info.remainingMinutes > 0)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: lightBlue.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: lightBlue.withOpacity(0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Text(
-                          '${info.remainingTimeString} 남음',
-                          style: TextStyle(
-                            color:
-                                isDark
-                                    ? Colors.blue.shade200
-                                    : Colors.blue.shade800,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
