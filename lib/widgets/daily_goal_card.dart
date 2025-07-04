@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../utils/daily_goal_service.dart';
+import '../features/timer_list/view_models/daily_goal_view_model.dart';
 
 class DailyGoalCard extends StatefulWidget {
   final VoidCallback? onTap;
@@ -11,11 +11,11 @@ class DailyGoalCard extends StatefulWidget {
 }
 
 class _DailyGoalCardState extends State<DailyGoalCard> {
-  final DailyGoalService _goalService = DailyGoalService();
+  final DailyGoalViewModel _viewModel = DailyGoalViewModel();
 
   @override
   Widget build(BuildContext context) {
-    final progressInfo = _goalService.getTodayProgressInfo();
+    final progressInfo = _viewModel.getProgressInfo();
 
     if (!progressInfo.isGoalSet) {
       return _buildNoGoalCard();
